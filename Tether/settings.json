@@ -1,0 +1,12 @@
+{
+  "ServerDensityUrl" : "http://www.example.com/",
+  "ServerDensityKey" : "SampleKey",
+  "CheckInterval" : 30,
+  "IISStatus" : true,
+  "MongoDBConnectionString" : null,
+  "MongoDBDBStats" : false,
+  "MongoDBReplSet" : false,
+  "SQLServerStatus" : true,
+  "SQLServerCustomPrefix" : null
+
+  }﻿
