@@ -7,6 +7,7 @@ using Tether.Plugins;
 
 namespace Tether.CoreChecks
 {
+
     public class DriveInfoBasedDiskUsageCheck : ICheck
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();

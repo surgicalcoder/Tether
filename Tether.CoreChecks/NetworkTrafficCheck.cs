@@ -24,7 +24,7 @@ namespace Tether.CoreChecks
             foreach (var nic in interfaces)
             {
 
-                if (nic.OperationalStatus != OperationalStatus.Up)
+                if (nic.OperationalStatus != OperationalStatus.Up || nic.Name.ToLower().Contains("pseudo") || nic.Name.ToLower().Contains("teredo"))
                 {
                     continue;
                 }

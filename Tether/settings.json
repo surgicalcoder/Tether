@@ -1,12 +1,11 @@
 {
-  "ServerDensityUrl" : "http://www.example.com/",
-  "ServerDensityKey" : "SampleKey",
-  "CheckInterval" : 30,
-  "IISStatus" : true,
-  "MongoDBConnectionString" : null,
-  "MongoDBDBStats" : false,
-  "MongoDBReplSet" : false,
-  "SQLServerStatus" : true,
-  "SQLServerCustomPrefix" : null
-
-  }﻿
+    "ServerDensityUrl": "https://elateral.serverdensity.io",
+    "ServerDensityKey": "fbc843132b34d5d7dcd5e05bc3c389b3",
+    "CheckInterval": 60,
+    "IISStatus": true,
+    "MongoDBConnectionString": null,
+    "MongoDBDBStats": false,
+    "MongoDBReplSet": false,
+    "SQLServerStatus": true,
+    "SQLServerCustomPrefix": null
+}

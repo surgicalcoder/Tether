@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,6 +56,18 @@
     </Reference>
     <Reference Include="Topshelf.NLog, Version=3.2.150.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <HintPath>..\packages\Topshelf.NLog.3.2.0\lib\net40-full\Topshelf.NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Utilities.DataTypes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1a9f1ce8fe69b437, processorArchitecture=MSIL">
+      <HintPath>..\packages\CraigsUtilityLibrary-DataTypes.3.4.0199\lib\net40\Utilities.DataTypes.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Utilities.IO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=312f07f157e6ffd6, processorArchitecture=MSIL">
+      <HintPath>..\packages\CraigsUtilityLibrary-IO.3.4.0199\lib\net40\Utilities.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Utilities.Reflection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=501e17eff79c154d, processorArchitecture=MSIL">
+      <HintPath>..\packages\CraigsUtilityLibrary-Reflection.3.4.0199\lib\net40\Utilities.Reflection.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -74,6 +87,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Tether.CoreChecks\Tether.CoreChecks.csproj">
+      <Project>{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}</Project>
+      <Name>Tether.CoreChecks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tether.CoreSlices\Tether.CoreSlices.csproj">
+      <Project>{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}</Project>
+      <Name>Tether.CoreSlices</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Tether.Plugins\Tether.Plugins.csproj">
       <Project>{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}</Project>
       <Name>Tether.Plugins</Name>
