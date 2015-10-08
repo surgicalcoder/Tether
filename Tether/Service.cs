@@ -27,7 +27,7 @@ namespace Tether
         Thread pluginDetectionThread;
         private bool systemStatsSent = false;
         private List<ICheck> ICheckTypeList;
-        private List<Type> CheckTypes;
+        private List<Type> sliceTypes;
 
         public Service()
         {
@@ -38,7 +38,7 @@ namespace Tether
             pluginDetectionThread.Start();
 
             ICheckTypeList = new List<ICheck>();
-            CheckTypes = new List<Type>();
+            sliceTypes = new List<Type>();
         }
 
         private void DetectPlugins()
@@ -62,7 +62,7 @@ namespace Tether
 
                     var types = assembly.GetTypes().Where(e => e.GetCustomAttribute<PerformanceCounterGroupingAttribute>() != null);
 
-                    CheckTypes.AddRange(types);
+                    sliceTypes.AddRange(types);
 
 
                 }
@@ -220,6 +220,22 @@ namespace Tether
                     }
 
                 });
+
+
+            Parallel.ForEach(
+                sliceTypes,
+                type =>
+                {
+                    MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
+                    var invoke = method.Invoke(this, null) as dynamic;
+                    objList.Add(invoke);
+
+                });
+
+            foreach (dynamic o in objList)
+            {
+                pluginCollection.Add("Slice_" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name, o);
+            }
 
             results.Add("plugins", pluginCollection);
 
