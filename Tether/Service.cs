@@ -71,16 +71,7 @@ namespace Tether
                     logger.Warn("Unable to load " + info.FullName, e);
                 }
             }
-
-            // These items have special handling for SD API
-            //CheckTypes.Remove(typeof (MemorySlice));
-            //CheckTypes.Remove(typeof (NetworkSlice));
-            //CheckTypes.Remove(typeof (ProcessorSlice));
         }
-
-
-
-
 
         private static List<T> PopulateMultiple<T>() where T : new()
         {
@@ -174,65 +165,8 @@ namespace Tether
 
             systemStatsSent = true;
 
-            /*var memorySlices = PopulateMultiple<MemorySlice>();
-            var networkSlices = PopulateMultiple<NetworkSlice>();
-            var processorSlice = PopulateMultiple<ProcessorSlice>();
-            
-            results.Add("networkTraffic", networkSlices.Select(
-                delegate(NetworkSlice n)
-                {
-                    dynamic data = new ExpandoObject();
-
-                    IDictionary<string, object> dictionary = (IDictionary<string, object>)data;
-                    dictionary.Add(n.Name, new { recv_bytes = n.BytesReceivedPersec, trans_bytes = n.BytesSentPersec});
-
-                    return data;
-                }) );
-
-
-            results.Add("memPhysFree", memorySlices[0].FreePhysicalMemory);
-            results.Add("memPhysUsed", memorySlices[0].TotalVisibleMemorySize - memorySlices[0].FreePhysicalMemory);
-            results.Add("memCached", memorySlices[0].SizeStoredInPagingFiles);
-            results.Add("memSwapFree", memorySlices[0].FreeVirtualMemory);
-            results.Add("memSwapUsed", memorySlices[0].TotalVirtualMemorySize - memorySlices[0].FreeVirtualMemory);
-
-            results.Add("processorSlice", processorSlice.Select(
-                delegate(ProcessorSlice f)
-                {
-                    dynamic data = new ExpandoObject();
-
-                    IDictionary<string, object> dictionary = (IDictionary<string, object>)data;
-
-                    dictionary.Add(processorSlice.IndexOf(f).ToString(), f);
-
-                    return data;
-                }));
-                */
-
-            //Parallel.ForEach(
-            //    CheckTypes,
-            //    type =>
-            //    {
-            //        MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] {type});
-            //        var invoke = method.Invoke(this, null) as dynamic;
-            //        objList.Add(invoke);
-
-            //    });
-
-
-            //foreach (dynamic o in objList)
-            //{
-            //    results.Add(((System.Type)(o.GetType())).GenericTypeArguments[0].Name, o);
-            //}
-
-            Console.WriteLine();
-            var checks = new List<ICheck>();
-
-            checks.AddRange(ICheckTypeList);
-            checks.AddRange(sdCoreChecks);
-
             Parallel.ForEach(
-                checks,
+                sdCoreChecks,
                 check =>
                 {
 
@@ -257,6 +191,37 @@ namespace Tether
                     }
 
                 });
+
+            var pluginCollection = new Dictionary<string, object>();
+
+            Parallel.ForEach(
+                ICheckTypeList,
+                check =>
+                {
+
+                    logger.Debug("{0}: start", check.GetType());
+                    try
+                    {
+
+                        var result = check.DoCheck();
+
+                        if (result == null)
+                        {
+                            return;
+                        }
+
+                        pluginCollection.Add(check.Key, result);
+
+                        logger.Debug("{0}: end", check.GetType());
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(string.Format("Error on {0}", check.GetType()), ex);
+                    }
+
+                });
+
+            results.Add("plugins", pluginCollection);
 
             try
             {

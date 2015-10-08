@@ -52,7 +52,7 @@ namespace Tether
             {
                 var data = new NameValueCollection();
                 data.Add("payload", payload);
-                logger.Debug(payload);
+                logger.Trace(payload);
                 data.Add("hash", hash);
                 var url = string.Format("{0}{1}postback/", ConfigurationSingleton.Instance.Config.ServerDensityUrl, ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/");
                 logger.Info("Posting to {0}", url);
@@ -70,7 +70,7 @@ namespace Tether
                     logger.Error("URL {0} returned: {1}", url, responseText);
                 }
 
-                logger.Debug(responseText);
+                logger.Trace(responseText);
             }
         }
 
