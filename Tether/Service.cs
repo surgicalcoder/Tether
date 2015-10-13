@@ -31,6 +31,7 @@ namespace Tether
 
         public Service()
         {
+            logger.Trace("start ctor");
             timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
             timer.Elapsed += Timer_Elapsed;
             
@@ -39,12 +40,18 @@ namespace Tether
 
             ICheckTypeList = new List<ICheck>();
             sliceTypes = new List<Type>();
+            logger.Trace("end ctor");
         }
 
+        private string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private void DetectPlugins()
         {
-            
-            DirectoryInfo di = new DirectoryInfo("plugins");
+            var pluginPath = Path.Combine(basePath, "plugins");
+            if (!Directory.Exists(pluginPath))
+            {
+                return;
+            }
+            DirectoryInfo di = new DirectoryInfo(pluginPath);
             FileInfo[] fileInfo = di.GetFiles("*.dll");
             foreach (var info in fileInfo)
             {
@@ -252,8 +259,16 @@ namespace Tether
 
         public bool Start(HostControl hostControl)
         {
-            timer.Enabled = true;
-            return true;
+            try
+            {
+                timer.Enabled = true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+                throw;
+            }
         }
 
         public bool Stop(HostControl hostControl)
