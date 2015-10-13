@@ -15,7 +15,7 @@ namespace Tether
 
         private ConfigurationSingleton()
         {
-            Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText("settings.json"));
+            Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText( Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),  "settings.json")));
         }
     }
 }
