@@ -29,6 +29,8 @@ namespace Tether
         private List<ICheck> ICheckTypeList;
         private List<Type> sliceTypes;
 
+        List<ICheck> sdCoreChecks;
+
         public Service()
         {
             logger.Trace("start ctor");
@@ -39,8 +41,28 @@ namespace Tether
             pluginDetectionThread.Start();
 
             ICheckTypeList = new List<ICheck>();
+
             sliceTypes = new List<Type>();
+
+            sdCoreChecks = new List<ICheck>();
+
+            CreateBaseChecks();
+
             logger.Trace("end ctor");
+        }
+
+        private void CreateBaseChecks()
+        {
+            sdCoreChecks.Add(new NetworkTrafficCheck());
+            sdCoreChecks.Add(new DriveInfoBasedDiskUsageCheck());
+            sdCoreChecks.Add(new ProcessorCheck());
+            sdCoreChecks.Add(new ProcessCheck());
+            sdCoreChecks.Add(new PhysicalMemoryFreeCheck());
+            sdCoreChecks.Add(new PhysicalMemoryUsedCheck());
+            sdCoreChecks.Add(new PhysicalMemoryCachedCheck());
+            sdCoreChecks.Add(new SwapMemoryFreeCheck());
+            sdCoreChecks.Add(new SwapMemoryUsedCheck());
+            sdCoreChecks.Add(new IOCheck());
         }
 
         private string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -152,23 +174,12 @@ namespace Tether
             var results = new Dictionary<string, object>();
             List<dynamic> objList = new List<dynamic>();
 
-            List<ICheck> sdCoreChecks = new List<ICheck>();
+            
 
-            if (!systemStatsSent)
+            if (systemStatsSent)
             {
-                sdCoreChecks.Add(new SystemStatsCheck());
+                sdCoreChecks.RemoveAll(f => f.Key == "systemStats");
             }
-
-            sdCoreChecks.Add(new NetworkTrafficCheck());
-            sdCoreChecks.Add(new DriveInfoBasedDiskUsageCheck());
-            sdCoreChecks.Add(new ProcessorCheck());
-            sdCoreChecks.Add(new ProcessCheck());
-            sdCoreChecks.Add(new PhysicalMemoryFreeCheck());
-            sdCoreChecks.Add(new PhysicalMemoryUsedCheck());
-            sdCoreChecks.Add(new PhysicalMemoryCachedCheck());
-            sdCoreChecks.Add(new SwapMemoryFreeCheck());
-            sdCoreChecks.Add(new SwapMemoryUsedCheck());
-            sdCoreChecks.Add(new IOCheck());
 
             systemStatsSent = true;
 
@@ -241,7 +252,11 @@ namespace Tether
 
             foreach (dynamic o in objList)
             {
-                pluginCollection.Add("Slice_" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name, o);
+                foreach (var coll in o)
+                {
+                    pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name + "]-" + o.IndexOf(coll), coll);
+                }
+                
             }
 
             results.Add("plugins", pluginCollection);

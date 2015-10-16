@@ -35,7 +35,7 @@ namespace Tether
             {
             }
 
-            _results.Add("agentVersion", "tether-0.0.1");
+            _results.Add("agentVersion", "tether-0.0.2");
         }
 
         /// <summary>

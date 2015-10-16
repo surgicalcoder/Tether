@@ -37,7 +37,7 @@ namespace Tether.CoreChecks
             try
             {
                 _values = new List<float>();
-                _timer = new System.Timers.Timer(30000); // TODO, needs fixing.
+                _timer = new System.Timers.Timer(60000);
 
                 _timer.Elapsed += Timer_Elapsed;
                 _timer.Enabled = true;
