@@ -73,6 +73,7 @@ namespace Tether
             {
                 return;
             }
+            logger.Trace("Finding plugins");
             DirectoryInfo di = new DirectoryInfo(pluginPath);
             FileInfo[] fileInfo = di.GetFiles("*.dll");
             foreach (var info in fileInfo)
@@ -90,7 +91,10 @@ namespace Tether
 
 
                     var types = assembly.GetTypes().Where(e => e.GetCustomAttribute<PerformanceCounterGroupingAttribute>() != null);
-
+                    foreach (var type in types)
+                    {
+                        logger.Trace("Found slice " + type.FullName);
+                    }
                     sliceTypes.AddRange(types);
 
 
@@ -100,6 +104,8 @@ namespace Tether
                     logger.Warn("Unable to load " + info.FullName, e);
                 }
             }
+
+            logger.Trace("Plugins found!");
         }
 
         private static List<T> PopulateMultiple<T>() where T : new()
@@ -130,29 +136,37 @@ namespace Tether
                     {
                         PropertyInfo property = typeof(T).GetProperties()
                                 .FirstOrDefault(
-                                    f =>
-                                        (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) ||
-                                        f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
+                                    f => (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) || f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
 
-                        var changeType = Convert.ChangeType(var[name], property.PropertyType);
-
-                        if (property.Attribute<PerformanceCounterValueAttribute>() != null && property.Attribute<PerformanceCounterValueAttribute>().Divisor > 0)
+                        try
                         {
-                            if (property.PropertyType == typeof(long))
-                            {
-                                changeType = (long)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-                            }
-                            else if (property.PropertyType == typeof(int))
-                            {
-                                changeType = (int)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-                            }
-                            else if (property.PropertyType == typeof(short))
-                            {
-                                changeType = (short)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-                            }
-                        }
+                            
+                            var changeType = Convert.ChangeType(var[name], property.PropertyType);
 
-                        property.SetValue(item, changeType);
+                            if (property.Attribute<PerformanceCounterValueAttribute>() != null && property.Attribute<PerformanceCounterValueAttribute>().Divisor > 0)
+                            {
+                                if (property.PropertyType == typeof(long))
+                                {
+                                    changeType = (long)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                }
+                                else if (property.PropertyType == typeof(int))
+                                {
+                                    changeType = (int)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                }
+                                else if (property.PropertyType == typeof(short))
+                                {
+                                    changeType = (short)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                }
+                            }
+
+                            
+
+                            property.SetValue(item, changeType);
+                        }
+                        catch (Exception e)
+                        {
+                            logger.ErrorException("Error on property " + name, e);
+                        }
 
                     }
                     t.Add(item);
@@ -182,7 +196,7 @@ namespace Tether
             }
 
             systemStatsSent = true;
-
+            logger.Info("Polling Checks");
             Parallel.ForEach(
                 sdCoreChecks,
                 check =>
@@ -211,7 +225,7 @@ namespace Tether
                 });
 
             var pluginCollection = new Dictionary<string, object>();
-
+            logger.Info("Polling Slices");
             Parallel.ForEach(
                 ICheckTypeList,
                 check =>
@@ -239,14 +253,21 @@ namespace Tether
 
                 });
 
-
+            logger.Info("Generating SD compatible names for slices.");
             Parallel.ForEach(
                 sliceTypes,
                 type =>
                 {
-                    MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
-                    var invoke = method.Invoke(this, null) as dynamic;
-                    objList.Add(invoke);
+                    try
+                    {
+                        MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
+                        var invoke = method.Invoke(this, null) as dynamic;
+                        objList.Add(invoke);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger.ErrorException("Error during slice " + type.FullName, exception);
+                    }
 
                 });
 
@@ -254,7 +275,7 @@ namespace Tether
             {
                 foreach (var coll in o)
                 {
-                    pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name + "]-" + o.IndexOf(coll), coll);
+                    pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name + "]-[" + GetName(o, coll) +"]", coll);
                 }
                 
             }
@@ -269,6 +290,23 @@ namespace Tether
             catch (Exception ex)
             {
                 logger.Error(ex, "Error with sending data to SD servers");
+            }
+        }
+
+        private static dynamic GetName(dynamic o, dynamic coll)
+        {
+            try
+            {
+                if (((Type)coll.GetType()).GetProperties().Any(f=> f.Name == "Name" ))
+                {
+                    return ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll);
+                } //o.GetType().GetProperty("Name") != null ? o.Name : o.IndexOf(coll);
+                return o.IndexOf(coll);
+            }
+            catch (Exception e)
+            {
+                logger.ErrorException("GetName", e);
+                throw;
             }
         }
 
