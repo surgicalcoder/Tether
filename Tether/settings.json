@@ -1,6 +1,6 @@
 {
-    "ServerDensityUrl": "https://elateral.serverdensity.io",
-    "ServerDensityKey": "fbc843132b34d5d7dcd5e05bc3c389b3",
+    "ServerDensityUrl": "https://accountname.serverdensity.io",
+    "ServerDensityKey": "[Machine Key goes in here!]",
     "CheckInterval": 60,
     "IISStatus": true,
     "MongoDBConnectionString": null,
