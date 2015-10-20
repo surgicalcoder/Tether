@@ -20,10 +20,16 @@ namespace Tether
                     x.UseNLog();
                     x.Service<Service>();
                     x.RunAsLocalSystem();
-                    x.StartAutomaticallyDelayed();
+                    x.StartAutomatically();
                     x.SetDescription("ThreeOneThree.Tether");
                     x.SetDisplayName("ThreeOneThree.Tether");
                     x.SetServiceName("ThreeOneThree.Tether");
+
+                    x.EnableServiceRecovery(
+                        r =>
+                        {
+                            r.RestartService(0);
+                        });
                 });
 
                 host.Run();

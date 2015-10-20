@@ -15,11 +15,13 @@ namespace Tether.CoreSlices
 
         public long AvgDiskWriteQueueLength { get; set; }
 
-        public long DiskReadBytesPerSec { get; set; }
+        [PerformanceCounterValue("DiskReadBytesPerSec", 1024)]
+        public long DiskReadKBPerSec { get; set; }
 
         public int DiskReadsPerSec { get; set; }
 
-        public long DiskWriteBytesPerSec { get; set; }
+        [PerformanceCounterValue("DiskWriteBytesPerSec", 1024)]
+        public long DiskWriteKBPerSec { get; set; }
 
         public int DiskWritesPerSec { get; set; }
 
