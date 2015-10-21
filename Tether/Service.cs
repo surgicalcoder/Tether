@@ -90,7 +90,7 @@ namespace Tether
                     }
 
 
-                    var types = assembly.GetTypes().Where(e => e.GetCustomAttribute<PerformanceCounterGroupingAttribute>() != null);
+                    var types = assembly.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any());
                     foreach (var type in types)
                     {
                         logger.Trace("Found slice " + type.FullName);
@@ -161,7 +161,7 @@ namespace Tether
 
                             
 
-                            property.SetValue(item, changeType);
+                            property.SetValue(item , changeType, null);
                         }
                         catch (Exception e)
                         {
@@ -275,7 +275,7 @@ namespace Tether
             {
                 foreach (var coll in o)
                 {
-                    pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GenericTypeArguments[0].Name + "]-[" + GetName(o, coll) +"]", coll);
+                    pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GetGenericArguments()[0].Name + "]-[" + GetName(o, coll) +"]", coll);
                 }
                 
             }
@@ -299,7 +299,7 @@ namespace Tether
             {
                 if (((Type)coll.GetType()).GetProperties().Any(f=> f.Name == "Name" ))
                 {
-                    return ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll);
+                    return ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll, null);
                 } //o.GetType().GetProperty("Name") != null ? o.Name : o.IndexOf(coll);
                 return o.IndexOf(coll);
             }
