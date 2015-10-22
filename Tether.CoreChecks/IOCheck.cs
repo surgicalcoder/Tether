@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Management;
+using NLog;
 using Tether.Plugins;
 
 namespace Tether.CoreChecks
@@ -14,7 +17,7 @@ namespace Tether.CoreChecks
         /// List of the physical drives to check
         /// </summary>
         private List<Drive> drivesToCheck;
-
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         /// <summary>
         /// Initializes a new instance of the IOCheck class and set up the performance monitors we need
         /// </summary>
@@ -34,7 +37,10 @@ namespace Tether.CoreChecks
                 }
 
                 var drive = new Drive();
-                drive.DriveName = instance.Split(new char[1] { ' ' }, 2)[1];
+
+
+                drive.DriveName = GetDriveNameForMountPoint(instance);
+                
                 drive.InstanceName = instance;
                 drive.Metrics = new List<DriveMetric>();
 
@@ -54,6 +60,30 @@ namespace Tether.CoreChecks
 
                 this.drivesToCheck.Add(drive);
             }
+        }
+
+        private string GetDriveNameForMountPoint(string DriveID)
+        {
+            try
+            {
+
+                if (DriveID.Contains(" "))
+                {
+                    return DriveID.Split(new char[1] { ' ' }, 2)[1];
+                }
+
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(@"Root\Microsoft\Windows\Storage", @"SELECT * FROM MSFT_Partition WHERE DiskNumber='" + DriveID + "'");
+
+                foreach (string[] wibble in from ManagementObject ob in searcher.Get() where ob["AccessPaths"] != null select ob["AccessPaths"] as string[])
+                {
+                    return wibble.FirstOrDefault(f => !f.Contains(@"\\?\"));
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Debug("Error with MSFT", e);
+            }
+            return DriveID.ToString();
         }
 
         /// <summary>
