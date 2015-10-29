@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationSingleton.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="PayloadPoster.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -24,7 +24,6 @@ namespace Tether
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private Timer timer;
-        Thread pluginDetectionThread;
         private bool systemStatsSent = false;
         private List<ICheck> ICheckTypeList;
         private List<Type> sliceTypes;
@@ -37,14 +36,13 @@ namespace Tether
             timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
             timer.Elapsed += Timer_Elapsed;
             
-            pluginDetectionThread = new Thread(DetectPlugins);
-            pluginDetectionThread.Start();
-
             ICheckTypeList = new List<ICheck>();
 
             sliceTypes = new List<Type>();
 
             sdCoreChecks = new List<ICheck>();
+
+            DetectPlugins();
 
             CreateBaseChecks();
 
@@ -53,16 +51,40 @@ namespace Tether
 
         private void CreateBaseChecks()
         {
-            sdCoreChecks.Add(new NetworkTrafficCheck());
-            sdCoreChecks.Add(new DriveInfoBasedDiskUsageCheck());
-            sdCoreChecks.Add(new ProcessorCheck());
-            sdCoreChecks.Add(new ProcessCheck());
-            sdCoreChecks.Add(new PhysicalMemoryFreeCheck());
-            sdCoreChecks.Add(new PhysicalMemoryUsedCheck());
-            sdCoreChecks.Add(new PhysicalMemoryCachedCheck());
-            sdCoreChecks.Add(new SwapMemoryFreeCheck());
-            sdCoreChecks.Add(new SwapMemoryUsedCheck());
-            sdCoreChecks.Add(new IOCheck());
+            logger.Info("Creating Base Checks...");
+
+            sdCoreChecks.Add(CreateCheck<NetworkTrafficCheck>());
+            sdCoreChecks.Add(CreateCheck<DriveInfoBasedDiskUsageCheck>());
+            sdCoreChecks.Add(CreateCheck<ProcessorCheck>());
+            sdCoreChecks.Add(CreateCheck<ProcessCheck>());
+            sdCoreChecks.Add(CreateCheck<PhysicalMemoryFreeCheck>());
+            sdCoreChecks.Add(CreateCheck<PhysicalMemoryUsedCheck>());
+            sdCoreChecks.Add(CreateCheck<PhysicalMemoryCachedCheck>());
+            sdCoreChecks.Add(CreateCheck<SwapMemoryFreeCheck>());
+            sdCoreChecks.Add(CreateCheck<SwapMemoryUsedCheck>());
+            sdCoreChecks.Add(CreateCheck<IOCheck>());
+
+            logger.Info("Base Check Creation Complete...");
+        }
+
+        private ICheck CreateCheck<T>() where T: ICheck, new()
+        {
+            logger.Trace("Creating " + typeof(T).Name);
+
+            T item;
+            try
+            {
+                item = new T();
+            }
+            catch (Exception e)
+            {
+                logger.Trace("Error when creating " + typeof(T).Name, e);
+                throw;
+            }
+
+            logger.Trace("Finished Creating " + typeof(T).Name);
+
+            return item;
         }
 
         private string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -94,10 +116,9 @@ namespace Tether
                     foreach (var type in types)
                     {
                         logger.Trace("Found slice " + type.FullName);
+                        sliceTypes.Add(type);
                     }
-                    sliceTypes.AddRange(types);
-
-
+            
                 }
                 catch (Exception e)
                 {
@@ -179,16 +200,10 @@ namespace Tether
             return t;
         }
 
-
-
-
-
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             var results = new Dictionary<string, object>();
             List<dynamic> objList = new List<dynamic>();
-
-            
 
             if (systemStatsSent)
             {
@@ -300,7 +315,7 @@ namespace Tether
                 if (((Type)coll.GetType()).GetProperties().Any(f=> f.Name == "Name" ))
                 {
                     return ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll, null);
-                } //o.GetType().GetProperty("Name") != null ? o.Name : o.IndexOf(coll);
+                }
                 return o.IndexOf(coll);
             }
             catch (Exception e)
@@ -326,63 +341,8 @@ namespace Tether
 
         public bool Stop(HostControl hostControl)
         {
-            if (pluginDetectionThread.IsAlive)
-            {
-                pluginDetectionThread.Abort();
-            }
-
             timer.Enabled = false;
             return true;
         }
     }
-
-    public static class Helpers
-    {
-
-        public static IEnumerable<ManagementObject> PerformFiltering(this IEnumerable<ManagementObject> obj, SelectorEnum selector, string selectorValue, string[] ExceptList, string subQuery = null)
-        {
-            IEnumerable<string> excepts = new List<string>();
-            if (ExceptList != null)
-            {
-                excepts = ExceptList.Select(f => f.ToLowerInvariant());
-            }
-
-            IEnumerable<ManagementObject> returnList = obj;
-
-            switch (selector)
-            {
-                case SelectorEnum.Single:
-                    returnList = obj.Take(1);
-                    break;
-                case SelectorEnum.Each:
-                    returnList = obj;
-                    break;
-                case SelectorEnum.Index:
-                    returnList = obj.Skip(Convert.ToInt32(selectorValue) - 1).Take(1);
-                    break;
-                case SelectorEnum.Name:
-                    returnList = obj.Where(f => f["Name"] == selectorValue);
-                    break;
-                case SelectorEnum.Total:
-                    returnList = obj.Where(f => f["Name"].ToString().ToLowerInvariant() == "_Total".ToLowerInvariant());
-                    break;
-                case SelectorEnum.Except:
-                    returnList = obj.Where(
-                        delegate (ManagementObject f)
-                        {
-                            return !excepts.Any(except => f["Name"].ToString().ToLowerInvariant().Contains(except));
-                        });
-                    break;
-            }
-
-            if (!String.IsNullOrEmpty(subQuery))
-            {
-                returnList = returnList.Where(e => e["Name"].ToString() == new ManagementObjectSearcher("root\\cimv2", "select Description from Win32_NetworkAdapterConfiguration where IPEnabled=True").Get().Cast<ManagementObject>().FirstOrDefault().Properties.Cast<PropertyData>().FirstOrDefault().Value);
-            }
-
-            return returnList;
-        }
-    }
-
-
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
+using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 using Tether.Plugins;
 
@@ -18,6 +20,7 @@ namespace Tether.CoreChecks
         /// </summary>
         private List<Drive> drivesToCheck;
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        Thread counterThread;
         /// <summary>
         /// Initializes a new instance of the IOCheck class and set up the performance monitors we need
         /// </summary>
@@ -26,7 +29,14 @@ namespace Tether.CoreChecks
             this.drivesToCheck = new List<Drive>();
 
             var perfCategory = new PerformanceCounterCategory("PhysicalDisk");
-            string[] instanceNames = perfCategory.GetInstanceNames();
+
+            logger.Trace("Getting instance Names");
+            // string[] instanceNames = perfCategory.GetInstanceNames();
+
+            var searcher = new ManagementObjectSearcher("root\\cimv2", "SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk");
+            var instanceNames = searcher.Get().Cast<ManagementObject>().Select(e => e["Name"].ToString()).ToArray();
+
+            logger.Trace("Instance Names populated");
 
             foreach (var instance in instanceNames)
             {
@@ -35,9 +45,9 @@ namespace Tether.CoreChecks
                 {
                     continue;
                 }
+                logger.Trace("Instance = " + instance);
 
                 var drive = new Drive();
-
 
                 drive.DriveName = GetDriveNameForMountPoint(instance);
                 
@@ -52,14 +62,30 @@ namespace Tether.CoreChecks
                 drive.Metrics.Add(new DriveMetric() { MetricName = "w/s", Counter = new PerformanceCounter("PhysicalDisk", "Disk Writes/sec", instance), Divisor = 1 });
                 drive.Metrics.Add(new DriveMetric() { MetricName = "svctm", Counter = new PerformanceCounter("PhysicalDisk", "Avg. Disk sec/Transfer", instance), Divisor = 1 });
 
+                
                 // take the first readings
-                foreach (var c in drive.Metrics)
-                {
-                    c.Counter.NextValue();
-                }
-
+                //foreach (var c in drive.Metrics)
+                //{
+                //    c.Counter.NextValue();
+                //}
                 this.drivesToCheck.Add(drive);
             }
+
+            counterThread = new Thread(GetNextCounterValueToIgnore);
+            counterThread.Start();
+        }
+
+        private void GetNextCounterValueToIgnore()
+        {
+            logger.Trace("GetNextCounterValueToIgnore Start");
+            foreach (Drive drive in drivesToCheck)
+            {
+                foreach (DriveMetric metric in drive.Metrics)
+                {
+                    metric.Counter.NextValue();
+                }
+            }
+            logger.Trace("GetNextCounterValueToIgnore Stop");
         }
 
         private string GetDriveNameForMountPoint(string DriveID)
