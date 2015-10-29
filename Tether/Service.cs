@@ -27,7 +27,7 @@ namespace Tether
         private bool systemStatsSent = false;
         private List<ICheck> ICheckTypeList;
         private List<Type> sliceTypes;
-
+        Thread pluginDetectionThread;
         List<ICheck> sdCoreChecks;
 
         public Service()
@@ -35,18 +35,25 @@ namespace Tether
             logger.Trace("start ctor");
             timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
             timer.Elapsed += Timer_Elapsed;
-            
+
+
+
             ICheckTypeList = new List<ICheck>();
 
             sliceTypes = new List<Type>();
 
             sdCoreChecks = new List<ICheck>();
+            pluginDetectionThread = new Thread(DetectAndCreate);
+            pluginDetectionThread.Start();
 
+            logger.Trace("end ctor");
+        }
+
+        private void DetectAndCreate()
+        {
             DetectPlugins();
 
             CreateBaseChecks();
-
-            logger.Trace("end ctor");
         }
 
         private void CreateBaseChecks()
