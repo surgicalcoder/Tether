@@ -22,7 +22,7 @@ and put in your SD account name in there, and Server's Key.
 
 > NOTE: There is a provisioning agent, which I will be releasing the source code for, but it's not quite ready yet.
 
-### Configruation - Logging Level
+### Configuration - Logging Level
 
 By default, the logging level is a bit too low, it will log everything it will send, into the logs folder. While you may wish to keep this, its suggested that you drop this. You can do this by editing Tether.exe.config, by changing:
 
