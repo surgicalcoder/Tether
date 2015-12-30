@@ -1,15 +1,17 @@
 # Tether
-Server Density compatible Windows Agent. We currently have this agent running on over 70 machines, and is in active development.
+Server Density compatible Windows Agent. We currently have this agent running on over 110 machines, and is in active development.
 
 ## Requirements
 
 - A Windows Machine
-- .NET 4.5 minimum
+- .NET 4.0 minimum
 - Server Density Account
 
 ## How to use
 
-Grab a build, either build yourself (I've tested this only with Visual Studio 2015, but it should work with other versions, your mileage may vary), and it should produce you some files in the bin/Debug folder. Copy these to your server or servers, and put in a directory. 
+Grab a build, either build yourself or from the AppVeyor link at the bottom of this page (I've tested this only with Visual Studio 2015, but it should work with other versions, your mileage may vary), and it should produce you some files in the bin/Debug folder. 
+
+Copy these to your server or servers, put into a directory, then edit settings: 
 
 ### Editing settings
 
@@ -62,9 +64,25 @@ You can also run this as a command line, and not through Windows Services, simpl
 
 ## Additional Plugins
 
-By default, depending on how you built this, you will just get the basic SD compatible plugin, if you want some deeper system stats, build **Tether.CoreSlices**, create a **plugin** folder, and put the dll in there.
+By default, depending on how you built this, you will just get the basic SD compatible plugin, if you want some deeper system stats, build **Tether.CoreSlices**, create a **plugins** folder, and put the dll in there.
 
 We have essentially the same interface as Server Density's windows agent. 
+
+## Self updating Plugins!
+
+A new feature of Tether 0.0.8 is automatically checking for updates to plugins, every 5 mins, from a URL you specify in the configuration file like so:
+
+      "PluginManifestLocation": "~/PluginManifest.json"
+      
+This will go and check that file location. There are 3 ways to specify a path - an absolute local path, a relative path, and a URL.
+
+Every 5 minutes, Tether will check the plugins loaded, against the plugin manifest file - it will perform a regex match against the name (so you can have one manifest file targetting many machines!), then automatically download and extract the file, and restart itself.
+
+## Version History
+
+
+* [0.0.8] Introduction of self updating plugin framework
+* [0.0.8] Removal of some unused settings i.e. MongoDB for Windows.
 
 ## Build
 Builds are being run, thanks to AppVeyor!

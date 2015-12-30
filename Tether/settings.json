@@ -2,10 +2,5 @@
     "ServerDensityUrl": "https://accountname.serverdensity.io",
     "ServerDensityKey": "[Machine Key goes in here!]",
     "CheckInterval": 60,
-    "IISStatus": true,
-    "MongoDBConnectionString": null,
-    "MongoDBDBStats": false,
-    "MongoDBReplSet": false,
-    "SQLServerStatus": true,
-    "SQLServerCustomPrefix": null
+    "PluginManifestLocation": ""
 }

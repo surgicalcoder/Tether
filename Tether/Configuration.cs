@@ -9,18 +9,8 @@ namespace Tether
 
         public int CheckInterval { get; set; }
 
-        public bool IISStatus { get; set; }
-        public string MongoDBConnectionString { get; set; }
-
-
-        public bool MongoDBDBStats { get; set; }
-
-        public bool MongoDBReplSet { get; set; }
-
-        public bool SQLServerStatus { get; set; }
-
-        public string SQLServerCustomPrefix { get; set; }
-
+        public string PluginManifestLocation { get; set; }
+        
         
     }
 }
