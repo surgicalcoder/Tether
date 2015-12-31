@@ -62,13 +62,17 @@ You can also run this as a command line, and not through Windows Services, simpl
 
 	net stop ThreeOneThree.Tether
 
-## Additional Plugins
+## Plugin Framework
 
 By default, depending on how you built this, you will just get the basic SD compatible plugin, if you want some deeper system stats, build **Tether.CoreSlices**, create a **plugins** folder, and put the dll in there.
 
 We have essentially the same interface as Server Density's windows agent. 
 
-## Self updating Plugins!
+### Addtional Plugins
+
+A seperate GitHub project - [Tether.Plugins](https://github.com/surgicalcoder/Tether.Plugins) has been set up for additional plugins.
+
+### Self updating Plugins!
 
 A new feature of Tether 0.0.8 is automatically checking for updates to plugins, every 5 mins, from a URL you specify in the configuration file like so:
 
