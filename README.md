@@ -20,7 +20,9 @@ Edit your settings.json, and you will need to change at least the following:
 
 and put in your SD account name in there, and Server's Key.
 
-> NOTE: There is a provisioning agent, which I will be releasing the source code for, but it's not quite ready yet.
+### Provisioning / Installation Agent
+
+There is now an installation agent available - [Tether.Installer](https://github.com/surgicalcoder/tether.installer) - instructions can be found on the project page.
 
 ### Configuration - Logging Level
 
