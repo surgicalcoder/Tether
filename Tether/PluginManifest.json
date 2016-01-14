@@ -1,0 +1,11 @@
+﻿{
+  "Items": [
+    {
+      "MachineFilter": ".*",
+      "PluginName": "Tether.CoreSlices",
+      "PluginVersion": "1.0.0.0",
+      "PluginDownloadLocation": "https://docs.google.com/uc?authuser=0&id=0B5i9GelbqnXyaXdMYzZVeEpMSGc&export=download"
+    }
+  ]
+}
+

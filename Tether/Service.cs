@@ -109,7 +109,9 @@ namespace Tether
             {
                 try
                 {
-                    var assembly = Assembly.LoadFile(info.FullName);
+                    Assembly assembly = Assembly.LoadFile(info.FullName);
+
+                    ConfigurationSingleton.Instance.PluginAssemblies.Add(assembly);
 
                     var enumerable = assembly.Types(typeof(ICheck));
                     

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Newtonsoft.Json;
 
 namespace Tether
@@ -16,6 +18,10 @@ namespace Tether
         private ConfigurationSingleton()
         {
             Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText( Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),  "settings.json")));
+            PluginAssemblies = new List<Assembly>();
         }
+
+        public List<Assembly> PluginAssemblies { get; set; }
+        
     }
 }
