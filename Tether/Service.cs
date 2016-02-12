@@ -265,8 +265,15 @@ namespace Tether
                         {
                             return;
                         }
-
-                        pluginCollection.Add(check.Key, result);
+                        if (pluginCollection.ContainsKey(check.Key))
+                        {
+                            logger.Warn("Key already exists for plugin " + check.Key + " of type " + check.GetType());
+                            pluginCollection.Add(check.Key + "2", result);
+                        }
+                        else
+                        {
+                            pluginCollection.Add(check.Key, result);
+                        }
 
                         logger.Debug("{0}: end", check.GetType());
                     }
