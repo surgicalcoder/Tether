@@ -58,7 +58,7 @@ namespace Tether.CoreChecks
                 float cpuPercentage = new PerformanceCounter(effectiveKey, _names[effectiveKey][1], name).NextValue();
                 float workingSet = new PerformanceCounter(effectiveKey, _names[effectiveKey][2], name).NextValue();
                 decimal memoryPercentage=0;
-                if (workingSet > 0)
+                if (workingSet > 0 && _totalMemory > 0)
                 {
                     memoryPercentage = Decimal.Round(((decimal)workingSet / (decimal)_totalMemory * 100), 2);
                 }
