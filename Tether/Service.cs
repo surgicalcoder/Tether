@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -145,11 +146,90 @@ namespace Tether
 
             if (pcga != null)
             {
+
+                if (pcga.UsePerformanceCounter)
+                {
+                    var PerfCounter = new PerformanceCounterCategory(pcga.WMIClassName);
+
+
+                    var instances = PerfCounter.GetInstanceNames().PerformCounterFiltering(pcga.Selector, pcga.SelectorValue, pcga.ExclusionContains);
+
+                    foreach (var instance in instances)
+                    {
+                        var item = new T();
+
+                        IEnumerable<string> names = typeof(T).GetProperties()
+                                                .Where(f => f.Attribute<PerformanceCounterValueExcludeAttribute>() == null)
+                                                .Select(
+                                                    delegate (PropertyInfo info)
+                                                    {
+                                                        if (info.Attribute<PerformanceCounterValueAttribute>() != null && info.Attribute<PerformanceCounterValueAttribute>().PropertyName != null)
+                                                        {
+                                                            return info.Attribute<PerformanceCounterValueAttribute>().PropertyName;
+                                                        }
+                                                        return info.Name;
+                                                    });
+
+                        foreach (var name in names)
+                        {
+                            PropertyInfo property = typeof(T).GetProperties()
+                                    .FirstOrDefault(
+                                        f => (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) || f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
+
+
+                            if (property.Attribute<PerformanceCounterInstanceNameAttribute>() != null)
+                            {
+                                property.SetValue(item, instance, null);
+                            }
+                            else
+                            {
+
+                                try
+                                {
+
+                                    var changeType = Convert.ChangeType(PerfCounter.GetCounters(instance).FirstOrDefault(e => e.CounterName == name).NextValue(), property.PropertyType);
+
+                                    if (property.Attribute<PerformanceCounterValueAttribute>() != null && property.Attribute<PerformanceCounterValueAttribute>().Divisor > 0)
+                                    {
+                                        if (property.PropertyType == typeof (long))
+                                        {
+                                            changeType = (long) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                        }
+                                        else if (property.PropertyType == typeof (int))
+                                        {
+                                            changeType = (int) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                        }
+                                        else if (property.PropertyType == typeof (short))
+                                        {
+                                            changeType = (short) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
+                                        }
+                                    }
+
+
+
+                                    property.SetValue(item, changeType, null);
+                                }
+                                catch (Exception e)
+                                {
+                                    logger.ErrorException("Error on property " + name, e);
+                                }
+                            }
+
+                        }
+                        t.Add(item);
+
+                    }
+                    return t;
+
+                }
+
+
                 var searcher = new ManagementObjectSearcher(pcga.WMIRoot, "SELECT * FROM " + pcga.WMIClassName);
 
                 foreach (ManagementObject var in searcher.Get().Cast<ManagementObject>().PerformFiltering(pcga.Selector, pcga.SelectorValue, pcga.ExclusionContains, pcga.Subquery))
                 {
                     var item = new T();
+
                     IEnumerable<string> names = typeof(T).GetProperties()
                         .Where(f => f.Attribute<PerformanceCounterValueExcludeAttribute>() == null)
                         .Select(

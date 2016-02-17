@@ -19,6 +19,16 @@ namespace Tether.Plugins
             WMIRoot = @"\\.\root\cimv2";
         }
 
+        public PerformanceCounterGroupingAttribute(string wmiClassName, SelectorEnum selector, string selectorValue, bool usePerformanceCounter)
+        {
+            UsePerformanceCounter = usePerformanceCounter;
+            WMIClassName = wmiClassName;
+            Selector = selector;
+            SelectorValue = selectorValue;
+        }
+
+        public bool UsePerformanceCounter { get; set; }
+
         public string WMIRoot { get; set; }
         public string WMIClassName { get; set; }
         public SelectorEnum Selector { get; set; }
@@ -27,5 +37,11 @@ namespace Tether.Plugins
 
         public string Subquery { get; set; }
 
+    }
+
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public class PerformanceCounterInstanceNameAttribute : Attribute
+    {
+        
     }
 }

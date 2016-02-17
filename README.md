@@ -86,7 +86,9 @@ Every 5 minutes, Tether will check the plugins loaded, against the plugin manife
 
 ## Version History
 
-
+* [0.0.11] PerformanceCounterGroups can now actually point to Performance Counters, not just WMI counters that they (should) represent. The [Tether.Plugins](https://github.com/surgicalcoder/Tether.Plugins) project (Specifically the ASPNetRequests project) has a example of this working.
+* [0.0.10] A couple more Divide by Zero errors (this release was never made public)
+* [0.0.9] Fixed a couple of Divide by Zero errors, and auto-renaming of clashing plugins
 * [0.0.8] Introduction of self updating plugin framework
 * [0.0.8] Removal of some unused settings i.e. MongoDB for Windows.
 
