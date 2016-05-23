@@ -1,5 +1,5 @@
 # Tether
-Server Density compatible Windows Agent. We currently have this agent running on over 110 machines, and is in active development.
+Server Density compatible Windows Agent. We currently have this agent running on over 150 machines, and is in active development.
 
 ## Requirements
 
@@ -74,7 +74,7 @@ We have essentially the same interface as Server Density's windows agent.
 
 A seperate GitHub project - [Tether.Plugins](https://github.com/surgicalcoder/Tether.Plugins) has been set up for additional plugins.
 
-### Self updating Plugins!
+### Self updating Plugins! [0.0.8+]
 
 A new feature of Tether 0.0.8 is automatically checking for updates to plugins, every 5 mins, from a URL you specify in the configuration file like so:
 
@@ -84,8 +84,15 @@ This will go and check that file location. There are 3 ways to specify a path - 
 
 Every 5 minutes, Tether will check the plugins loaded, against the plugin manifest file - it will perform a regex match against the name (so you can have one manifest file targetting many machines!), then automatically download and extract the file, and restart itself.
 
+### Plugin configuration data [0.0.13+]
+
+Plugins can now make use of Configuration Data - by implementing the `IRequireConfigurationData` interface - the `LoadConfigurationData(dynamic data)` method will be called before the check is called, so you can load all the configuration data you need.
+
+Configuration data files live in the `plugins` directory, and are named `(Full Class Name).json` i.e. `Tether.SamplePlugin.ASPNet.json` and will be loaded automatically on start. 
+
 ## Version History
 
+* [0.0.13] Plugins can now require configuration data to work!
 * [0.0.12] Fixed memory leak issue with Performance Counter work.
 * [0.0.11] PerformanceCounterGroups can now actually point to Performance Counters, not just WMI counters that they (should) represent. The [Tether.Plugins](https://github.com/surgicalcoder/Tether.Plugins) project (Specifically the ASPNetRequests project) has a example of this working.
 * [0.0.10] A couple more Divide by Zero errors (this release was never made public)

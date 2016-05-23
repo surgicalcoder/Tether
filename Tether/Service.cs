@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Fluent;
 using Tether.CoreChecks;
@@ -27,6 +29,7 @@ namespace Tether
 		private Timer timer;
 		private bool systemStatsSent = false;
 		private List<ICheck> ICheckTypeList;
+	    private Dictionary<string, dynamic> PluginSettings;
 		private List<Type> sliceTypes;
 		Thread pluginDetectionThread;
 		List<ICheck> sdCoreChecks;
@@ -99,6 +102,7 @@ namespace Tether
 		private void DetectPlugins()
 		{
 			var pluginPath = Path.Combine(basePath, "plugins");
+
 			if (!Directory.Exists(pluginPath))
 			{
 				return;
@@ -135,6 +139,20 @@ namespace Tether
 					logger.Warn("Unable to load " + info.FullName, e);
 				}
 			}
+
+            // Plugin Settings
+
+		    var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
+
+            PluginSettings = new Dictionary<string, dynamic>();
+
+            foreach (var JsonFiles in di.GetFiles("*.json"))
+		    {
+		        if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
+		        {
+                    PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
+                }
+		    }
 
 			logger.Trace("Plugins found!");
 		}
@@ -356,6 +374,10 @@ namespace Tether
 					logger.Debug("{0}: start", check.GetType());
 					try
 					{
+					    if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
+					    {
+                            ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
+					    }
 
 						var result = check.DoCheck();
 
