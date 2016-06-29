@@ -1,0 +1,4 @@
+skip_commits: 
+  files:
+  - docs/*
+  - '**/*.md'
