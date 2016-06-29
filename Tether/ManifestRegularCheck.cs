@@ -64,12 +64,14 @@ namespace Tether
                 
                 foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
                 {
-                    var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(e => string.Compare(e.GetName().Name, manifestItem.PluginName, StringComparison.InvariantCultureIgnoreCase) > 0);
+                    var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(e => e.GetName().Name == manifestItem.PluginName);
 
                     if (assembly != null)
                     {
                         if (assembly.GetName().Version.ToString() != manifestItem.PluginVersion)
                         {
+                            logger.Debug(string.Format("Assembly: {2}, Current assembly version = {0}, expecting {1}", assembly.GetName().Version.ToString(), manifestItem.PluginVersion, assembly.FullName));
+
                             var zipPath = Path.Combine(tempPluginPath, assembly.GetName().Name + ".zip");
 
                             if (!Directory.Exists(tempPluginPath))
@@ -77,7 +79,7 @@ namespace Tether
                                 Directory.CreateDirectory(tempPluginPath);
                             }
 
-                                client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
+                            client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
                             Unzip(zipPath, tempPluginPath);
 
@@ -88,6 +90,7 @@ namespace Tether
                     }
                     else
                     {
+                        logger.Debug("Assembly not found: " + manifestItem.PluginName + ", downloading from " + manifestItem.PluginDownloadLocation);
                         var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
                         if (!Directory.Exists(tempPluginPath))
                         {
@@ -105,12 +108,13 @@ namespace Tether
 
                 if (requiresServiceRestart)
                 {
-                    string strCmdText = "/C net stop ThreeOneThree.Tether && move /Y _temp\\* . && net start ThreeOneThree.Tether";
 
+                    string strCmdText = "/C net stop ThreeOneThree.Tether & net start ThreeOneThree.Tether";
                     ProcessStartInfo info = new ProcessStartInfo("CMD.exe", strCmdText);
-
                     info.WorkingDirectory = pluginPath;
+
                     logger.Fatal("!!! GOING DOWN FOR AN UPDATE TO PLUGINS !!!");
+
                     Process.Start(info);
                 }
 

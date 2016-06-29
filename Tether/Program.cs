@@ -26,6 +26,15 @@ namespace Tether
                 var tempPath = Path.Combine(basePath, "plugins", "_temp");
                 if (Directory.Exists(tempPath))
                 {
+
+                    if (Directory.GetFiles(tempPath).Any())
+                    {
+                        foreach (var file in Directory.GetFiles(tempPath))
+                        {
+                            File.Move(file, Path.Combine(basePath, "plugins", Path.GetFileName(file) ) );
+                        }
+                    }
+
                     Directory.Delete(tempPath, true);
                 }
 

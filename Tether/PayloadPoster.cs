@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
@@ -35,7 +36,27 @@ namespace Tether
             {
             }
 
-            _results.Add("agentVersion", "tether-0.0.13");
+            try
+            {
+                var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                if (assemblyVersion.ToString() == "0.0.0.0")
+                {
+                    _results.Add("agentVersion", "tether-x");
+                }
+                else
+                {
+                    _results.Add("agentVersion", "tether-" + Assembly.GetExecutingAssembly().GetName().Version);
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                logger.Warn("Error on setting assembly version", e);
+
+                _results.Add("agentVersion", "tether-e");
+            }
+            
         }
 
         /// <summary>

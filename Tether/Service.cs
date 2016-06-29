@@ -116,24 +116,30 @@ namespace Tether
 				{
 					Assembly assembly = Assembly.LoadFile(info.FullName);
 
-					ConfigurationSingleton.Instance.PluginAssemblies.Add(assembly);
-
 					var enumerable = assembly.Types(typeof(ICheck));
-					
-					foreach (var type in enumerable)
+
+                    bool isPlugin = false;
+
+                    foreach (var type in enumerable)
 					{
 						ICheckTypeList.Add(Activator.CreateInstance(type) as ICheck);
+					    isPlugin = true;
 					}
-
 
 					var types = assembly.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any());
 					foreach (var type in types)
 					{
 						logger.Trace("Found slice " + type.FullName);
 						sliceTypes.Add(type);
+					    isPlugin = true;
 					}
-			
-				}
+
+				    if (isPlugin)
+				    {
+                        logger.Debug("Loaded plugin " + assembly.FullName);
+                        ConfigurationSingleton.Instance.PluginAssemblies.Add(assembly);
+                    }
+                }
 				catch (Exception e)
 				{
 					logger.Warn("Unable to load " + info.FullName, e);
