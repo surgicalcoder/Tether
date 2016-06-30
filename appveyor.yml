@@ -6,7 +6,7 @@ skip_commits:
   - docs/*
   - '**/*.md'
 
-  artifacts:
-    - path: Tether\bin\debug
-      name: Build
-      type: zip
+artifacts:
+  - path: Tether\bin\debug
+    name: Build
+    type: zip
