@@ -5,3 +5,8 @@ skip_commits:
   files:
   - docs/*
   - '**/*.md'
+
+  artifacts:
+    - path: Tether\bin\debug
+      name: Build
+      type: zip
