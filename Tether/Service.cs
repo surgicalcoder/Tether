@@ -114,7 +114,7 @@ namespace Tether
 			{
 				try
 				{
-					Assembly assembly = Assembly.LoadFile(info.FullName);
+					Assembly assembly = Assembly.LoadFrom(info.FullName);
 
 					var enumerable = assembly.Types(typeof(ICheck));
 
