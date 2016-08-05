@@ -92,6 +92,7 @@ Configuration data files live in the `plugins` directory, and are named `(Full C
 
 ## Version History
 
+* [1.0.34] Issue found by Steve Hurley @ Server Density with base IIS check not being run.
 * [1.0.33] Issue with loading dependencies from DLL's, should be resolved now.
 * [1.0.27] Changed convention for build numbers! Also fixed two issues - one where non plugin dll's were registered as plugins, and where some downloaded plugins were not updating.
 * [0.0.13] Plugins can now require configuration data to work!

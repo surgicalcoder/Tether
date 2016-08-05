@@ -74,6 +74,7 @@ namespace Tether
 			sdCoreChecks.Add(CreateCheck<SwapMemoryFreeCheck>());
 			sdCoreChecks.Add(CreateCheck<SwapMemoryUsedCheck>());
 			sdCoreChecks.Add(CreateCheck<IOCheck>());
+			sdCoreChecks.Add(CreateCheck<IISCheck>());
 
 			logger.Info("Base Check Creation Complete...");
 		}
