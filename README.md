@@ -20,7 +20,9 @@ There is a seperate project - [Tether.Installer](https://github.com/surgicalcode
       Start-Process -FilePath $destination -ArgumentList '((APIKEY))','https://ci.appveyor.com/api/projects/surgicalcoder/tether/artifacts/Tether%2Fbin%2FBuild.zip','C:\Tether' -NoNewWindow -Wait
       Remove-Item $destination
 
-This will automatically download Tether, the Tether installer, and install it to the path specified. Feel free to change paths above to what are required.
+Replace ((APIKEY)) with an API key you have retrieved from Server Density - [You can find more information about this here](https://developer.serverdensity.com/reference#getting-a-token-via-the-ui). You may also want to update the other parameters (for example, installation location which in this example is C:\Tether).
+
+This will automatically download Tether, the Tether installer, and install it to the path specified.
 
 ## Manual Installation Instructions
 
