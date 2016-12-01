@@ -1,5 +1,5 @@
 # Tether
-Server Density compatible Windows Agent. We currently have this agent running on over 150 machines, and is in active development.
+Server Density compatible Windows Agent. We currently have this agent running on over 200 machines, and is in active development.
 
 ## Requirements
 
@@ -7,7 +7,22 @@ Server Density compatible Windows Agent. We currently have this agent running on
 - .NET 4.0 minimum
 - Server Density Account
 
-## How to use
+# Installation
+
+## Automated installation
+
+There is a seperate project - [Tether.Installer](https://github.com/surgicalcoder/tether.installer) - that automates the installation and provisioning of a machine through the Server Density API. While there are more instructions on the project, you can use the following powershell script to automatically download and install Tether, using the latest builds:
+
+      $source = "https://ci.appveyor.com/api/projects/surgicalcoder/tether-installer/artifacts/SDInstaller.exe" 
+      $destination = "c:\SDInstaller.exe"
+      $WebClient = New-Object System.Net.WebClient
+      $WebClient.DownloadFile( $source, $destination )
+      Start-Process -FilePath $destination -ArgumentList '((APIKEY))','https://ci.appveyor.com/api/projects/surgicalcoder/tether/artifacts/Tether%2Fbin%2FBuild.zip','C:\Tether' -NoNewWindow -Wait
+      Remove-Item $destination
+
+This will automatically download Tether, the Tether installer, and install it to the path specified. Feel free to change paths above to what are required.
+
+## Manual Installation Instructions
 
 Grab a build, either build yourself or from the AppVeyor link at the bottom of this page (I've tested this only with Visual Studio 2015, but it should work with other versions, your mileage may vary), and it should produce you some files in the bin/Debug folder. 
 
@@ -21,10 +36,6 @@ Edit your settings.json, and you will need to change at least the following:
     "ServerDensityKey": "[Machine Key goes in here!]",
 
 and put in your SD account name in there, and Server's Key.
-
-### Provisioning / Installation Agent
-
-There is now an installation agent available - [Tether.Installer](https://github.com/surgicalcoder/tether.installer) - instructions can be found on the project page.
 
 ### Configuration - Logging Level
 
@@ -64,7 +75,7 @@ You can also run this as a command line, and not through Windows Services, simpl
 
 	net stop ThreeOneThree.Tether
 
-## Plugin Framework
+# Plugin Framework
 
 By default, depending on how you built this, you will just get the basic SD compatible plugin, if you want some deeper system stats, build **Tether.CoreSlices**, create a **plugins** folder, and put the dll in there.
 
