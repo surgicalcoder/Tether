@@ -8,20 +8,13 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "iisReqPerSec"; }
-        }
+        public string Key => "iisReqPerSec";
 
-        public override IDictionary<string, string> Names
-        {
-            get { return _names; }
-        }
+        public override IDictionary<string, string> Names => _names;
 
         public IISCheck() : base()
         {
-            _names = new Dictionary<string, string>();
-            _names.Add("Web Service", "Total Method Requests/sec");
+            _names = new Dictionary<string, string> {{"Web Service", "Total Method Requests/sec"}};
         }
 
         public object DoCheck()
@@ -34,7 +27,7 @@ namespace Tether.CoreChecks
 
             float requestsPerSecond = PerformanceCounter.NextValue();
             logger.Debug("IIS req/s is: {0}", requestsPerSecond);
-            return string.Format("{0:0.00}", requestsPerSecond);
+            return $"{requestsPerSecond:0.00}";
         }
 
         #endregion

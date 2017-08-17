@@ -15,6 +15,8 @@ namespace Tether.CoreChecks
     /// </summary>
     public class IOCheck : ICheck
     {
+        private const string PhsicalDiskCategoryName = "PhysicalDisk";
+
         /// <summary>
         /// List of the physical drives to check
         /// </summary>
@@ -28,7 +30,7 @@ namespace Tether.CoreChecks
         {
             this.drivesToCheck = new List<Drive>();
 
-            var perfCategory = new PerformanceCounterCategory("PhysicalDisk");
+            var perfCategory = new PerformanceCounterCategory(PhsicalDiskCategoryName);
 
             logger.Trace("Getting instance Names");
             // string[] instanceNames = perfCategory.GetInstanceNames();
@@ -52,22 +54,53 @@ namespace Tether.CoreChecks
                 drive.DriveName = GetDriveNameForMountPoint(instance);
                 
                 drive.InstanceName = instance;
-                drive.Metrics = new List<DriveMetric>();
+                drive.Metrics = new List<DriveMetric>
+                {
+                    new DriveMetric
+                    {
+                        MetricName = "rkB/s",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Disk Read Bytes/sec", instance),
+                        Divisor = 1024
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "wkB/s",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Disk Write Bytes/sec", instance),
+                        Divisor = 1024
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "%util",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "% Disk Time", instance),
+                        Divisor = 1
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "avgqu-sz",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Avg. Disk Queue Length", instance),
+                        Divisor = 1
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "r/s",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Disk Reads/sec", instance),
+                        Divisor = 1
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "w/s",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Disk Writes/sec", instance),
+                        Divisor = 1
+                    },
+                    new DriveMetric
+                    {
+                        MetricName = "svctm",
+                        Counter = new PerformanceCounter(PhsicalDiskCategoryName, "Avg. Disk sec/Transfer", instance),
+                        Divisor = 1
+                    }
+                };
 
-                drive.Metrics.Add(new DriveMetric() { MetricName = "rkB/s", Counter = new PerformanceCounter("PhysicalDisk", "Disk Read Bytes/sec", instance), Divisor = 1024 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "wkB/s", Counter = new PerformanceCounter("PhysicalDisk", "Disk Write Bytes/sec", instance), Divisor = 1024 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "%util", Counter = new PerformanceCounter("PhysicalDisk", "% Disk Time", instance), Divisor = 1 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "avgqu-sz", Counter = new PerformanceCounter("PhysicalDisk", "Avg. Disk Queue Length", instance), Divisor = 1 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "r/s", Counter = new PerformanceCounter("PhysicalDisk", "Disk Reads/sec", instance), Divisor = 1 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "w/s", Counter = new PerformanceCounter("PhysicalDisk", "Disk Writes/sec", instance), Divisor = 1 });
-                drive.Metrics.Add(new DriveMetric() { MetricName = "svctm", Counter = new PerformanceCounter("PhysicalDisk", "Avg. Disk sec/Transfer", instance), Divisor = 1 });
 
-                
-                // take the first readings
-                //foreach (var c in drive.Metrics)
-                //{
-                //    c.Counter.NextValue();
-                //}
                 this.drivesToCheck.Add(drive);
             }
 
@@ -98,7 +131,7 @@ namespace Tether.CoreChecks
                     return DriveID.Split(new char[1] { ' ' }, 2)[1];
                 }
 
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher(@"Root\Microsoft\Windows\Storage", @"SELECT * FROM MSFT_Partition WHERE DiskNumber='" + DriveID + "'");
+                var searcher = new ManagementObjectSearcher(@"Root\Microsoft\Windows\Storage", $@"SELECT * FROM MSFT_Partition WHERE DiskNumber='{DriveID}'");
 
                 foreach (string[] wibble in from ManagementObject ob in searcher.Get() where ob["AccessPaths"] != null select ob["AccessPaths"] as string[])
                 {
@@ -107,7 +140,7 @@ namespace Tether.CoreChecks
             }
             catch (Exception e)
             {
-                logger.Debug("Error with MSFT", e);
+                logger.Debug(e, "Error with MSFT");
             }
             return DriveID.ToString();
         }
@@ -115,10 +148,7 @@ namespace Tether.CoreChecks
         /// <summary>
         /// Gets the name of the check
         /// </summary>
-        public string Key
-        {
-            get { return "ioStats"; }
-        }
+        public string Key => "ioStats";
 
         /// <summary>
         /// Run the check
