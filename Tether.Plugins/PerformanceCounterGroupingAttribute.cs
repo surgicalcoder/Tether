@@ -38,10 +38,4 @@ namespace Tether.Plugins
         public string Subquery { get; set; }
 
     }
-
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class PerformanceCounterInstanceNameAttribute : Attribute
-    {
-        
-    }
 }
