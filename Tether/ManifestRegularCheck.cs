@@ -48,7 +48,9 @@ namespace Tether
                     {
                         localPath = Path.Combine(basePath, localPath.Substring(2));
                     }
-                    logger.Debug("Reading Plugin Manifest from " + localPath);
+
+                    logger.Debug($"Reading Plugin Manifest from {localPath}");
+
                     contents = File.ReadAllText(localPath);
                 }
 
@@ -70,7 +72,7 @@ namespace Tether
                     {
                         if (assembly.GetName().Version.ToString() != manifestItem.PluginVersion)
                         {
-                            logger.Debug(string.Format("Assembly: {2}, Current assembly version = {0}, expecting {1}", assembly.GetName().Version.ToString(), manifestItem.PluginVersion, assembly.FullName));
+                            logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.GetName().Version}, expecting {manifestItem.PluginVersion}");
 
                             var zipPath = Path.Combine(tempPluginPath, assembly.GetName().Name + ".zip");
 
@@ -90,12 +92,15 @@ namespace Tether
                     }
                     else
                     {
-                        logger.Debug("Assembly not found: " + manifestItem.PluginName + ", downloading from " + manifestItem.PluginDownloadLocation);
+                        logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
+
                         var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
+
                         if (!Directory.Exists(tempPluginPath))
                         {
                             Directory.CreateDirectory(tempPluginPath);
                         }
+
                         client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
                         Unzip(zipPath, tempPluginPath);
@@ -109,9 +114,11 @@ namespace Tether
                 if (requiresServiceRestart)
                 {
 
-                    string strCmdText = "/C net stop ThreeOneThree.Tether & net start ThreeOneThree.Tether";
-                    ProcessStartInfo info = new ProcessStartInfo("CMD.exe", strCmdText);
-                    info.WorkingDirectory = pluginPath;
+                    var strCmdText = "/C net stop ThreeOneThree.Tether & net start ThreeOneThree.Tether";
+                    var info = new ProcessStartInfo("CMD.exe", strCmdText)
+                    {
+                        WorkingDirectory = pluginPath
+                    };
 
                     logger.Fatal("!!! GOING DOWN FOR AN UPDATE TO PLUGINS !!!");
 
@@ -121,7 +128,7 @@ namespace Tether
             }
             catch (Exception e)
             {
-                logger.Warn("Error while checking Manifests", e);
+                logger.Warn(e, "Error while checking Manifests");
             }
         }
 
@@ -138,10 +145,10 @@ namespace Tether
 
         private void ExtractZipFile(string filePath, string destination)
         {
-            logger.Info("Unzipping '{0}' to {1}", filePath, destination);
+            logger.Info($"Unzipping '{filePath}' to {destination}");
+
             using (var archive = ZipArchive.Open(new FileInfo(filePath)))
             {
-                
                 archive.WriteToDirectory(destination, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
             }
         }

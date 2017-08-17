@@ -22,7 +22,7 @@ namespace Tether
         /// provided values.
         /// </summary>
         /// <param name="results">The payload dictionary.</param>
-        public PayloadPoster(IDictionary<string, object> results)
+        public PayloadPoster(Dictionary<string, object> results)
         {
             _results = results;
             _results.Add("os", "windows");
@@ -47,8 +47,6 @@ namespace Tether
                 {
                     _results.Add("agentVersion", "tether-" + Assembly.GetExecutingAssembly().GetName().Version);
                 }
-
-
             }
             catch (Exception e)
             {
@@ -77,7 +75,7 @@ namespace Tether
 
                 data.Add("hash", hash);
                 var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
-                logger.Info("Posting to {0}", url);
+                logger.Info($"Posting to {url}");
 
                 if (WebRequest.DefaultWebProxy != null)
                 {
@@ -89,7 +87,7 @@ namespace Tether
 
                 if (responseText != "OK" && responseText != "\"OK\"")
                 {
-                    logger.Error("URL {0} returned: {1}", url, responseText);
+                    logger.Error($"URL {url} returned: {responseText}");
                 }
 
                 logger.Trace(responseText);

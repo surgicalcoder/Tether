@@ -401,7 +401,7 @@ namespace Tether
 							pluginCollection.Add(check.Key, result);
 						}
 
-						logger.Debug("{0}: end", check.GetType());
+						logger.Debug($"{check.GetType()}: end");
 					}
 					catch (Exception ex)
 					{
@@ -433,7 +433,7 @@ namespace Tether
 			{
 				foreach (var coll in o)
 				{
-					pluginCollection.Add("Slice[" + ((System.Type)(o.GetType())).GetGenericArguments()[0].Name + "]-[" + GetName(o, coll) +"]", coll);
+					pluginCollection.Add($"Slice[{((Type) o.GetType()).GetGenericArguments()[0].Name}]-[" + GetName(o, coll) +"]", coll);
 				}
 				
 			}
