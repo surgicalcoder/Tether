@@ -55,8 +55,6 @@ namespace Tether
                     x.SetDisplayName("ThreeOneThree.Tether");
                     x.SetServiceName("ThreeOneThree.Tether");
 
-                    
-
                     x.EnableServiceRecovery(
                         r =>
                         {
@@ -68,7 +66,7 @@ namespace Tether
             }
             catch (Exception ex)
             {
-                logger.FatalException("Problem when trying to run host", ex);
+                logger.Fatal(ex, "Problem when trying to run host");
             }
 
         }

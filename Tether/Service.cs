@@ -40,8 +40,6 @@ namespace Tether
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
-
-
 			ICheckTypeList = new List<ICheck>();
 
 			sliceTypes = new List<Type>();
@@ -108,10 +106,13 @@ namespace Tether
 			{
 				return;
 			}
-			logger.Trace("Finding plugins");
-			DirectoryInfo di = new DirectoryInfo(pluginPath);
-			FileInfo[] fileInfo = di.GetFiles("*.dll");
-			foreach (var info in fileInfo)
+
+            logger.Trace("Finding plugins");
+
+            var di = new DirectoryInfo(pluginPath);
+			var fileInfo = di.GetFiles("*.dll");
+
+            foreach (var info in fileInfo)
 			{
 				try
 				{
@@ -143,12 +144,10 @@ namespace Tether
                 }
 				catch (Exception e)
 				{
-					logger.Warn("Unable to load " + info.FullName, e);
+					logger.Warn(e, $"Unable to load {info.FullName}");
 				}
 			}
-
-            // Plugin Settings
-
+            
 		    var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
 
             PluginSettings = new Dictionary<string, dynamic>();
@@ -171,7 +170,7 @@ namespace Tether
 				{
 					counter.Dispose();
 				}
-				catch (System.Exception)
+				catch (Exception)
 				{
 					// Yeah, I know. Yeah, I really do know.
 				}
@@ -189,7 +188,6 @@ namespace Tether
 				if (pcga.UsePerformanceCounter)
 				{
 					var PerfCounter = new PerformanceCounterCategory(pcga.WMIClassName);
-
 
 					var instances = PerfCounter.GetInstanceNames().PerformCounterFiltering(pcga.Selector, pcga.SelectorValue, pcga.ExclusionContains);
 
@@ -287,7 +285,7 @@ namespace Tether
 
 					foreach (var name in names)
 					{
-						PropertyInfo property = typeof(T).GetProperties()
+						var property = typeof(T).GetProperties()
 								.FirstOrDefault(
 									f => (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) || f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
 
@@ -318,7 +316,7 @@ namespace Tether
 						}
 						catch (Exception e)
 						{
-							logger.ErrorException("Error on property " + name, e);
+							logger.Error(e, $"Error on property {name}");
 						}
 
 					}
@@ -349,7 +347,8 @@ namespace Tether
 				check =>
 				{
 
-					logger.Debug("{0}: start", check.GetType());
+					logger.Debug($"{check.GetType()}: start");
+
 					try
 					{
 
@@ -366,7 +365,7 @@ namespace Tether
 					}
 					catch (Exception ex)
 					{
-						logger.Error(string.Format("Error on {0}", check.GetType()), ex);
+						logger.Error(ex, $"Error on {check.GetType()}");
 					}
 
 				});
@@ -406,12 +405,13 @@ namespace Tether
 					}
 					catch (Exception ex)
 					{
-						logger.Error(string.Format("Error on {0}", check.GetType()), ex);
+						logger.Error(ex, $"Error on {check.GetType()}");
 					}
 
 				});
 
 			logger.Info("Generating SD compatible names for slices.");
+
 			Parallel.ForEach(
 				sliceTypes,
 				type =>
@@ -424,7 +424,7 @@ namespace Tether
 					}
 					catch (Exception exception)
 					{
-						logger.ErrorException("Error during slice " + type.FullName, exception);
+						logger.Error(exception, $"Error during slice {type.FullName}");
 					}
 
 				});
@@ -463,7 +463,7 @@ namespace Tether
 			}
 			catch (Exception e)
 			{
-				logger.ErrorException("GetName", e);
+				logger.Error(e, "GetName");
 				throw;
 			}
 		}

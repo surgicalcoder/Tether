@@ -52,7 +52,7 @@ namespace Tether
             }
             catch (Exception e)
             {
-                logger.Warn("Error on setting assembly version", e);
+                logger.Warn(e, "Error on setting assembly version");
 
                 _results.Add("agentVersion", "tether-e");
             }
@@ -71,16 +71,17 @@ namespace Tether
             //       settings, read the response, etc.
             using (var client = new WebClient())
             {
-                var data = new NameValueCollection();
-                data.Add("payload", payload);
+                var data = new NameValueCollection {{"payload", payload}};
+
                 logger.Trace(payload);
+
                 data.Add("hash", hash);
-                var url = string.Format("{0}{1}postback/", ConfigurationSingleton.Instance.Config.ServerDensityUrl, ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/");
+                var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
                 logger.Info("Posting to {0}", url);
 
-                if (HttpWebRequest.DefaultWebProxy != null)
+                if (WebRequest.DefaultWebProxy != null)
                 {
-                    client.Proxy = HttpWebRequest.DefaultWebProxy;
+                    client.Proxy = WebRequest.DefaultWebProxy;
                 }
 
                 byte[] response = client.UploadValues(url, "POST", data);
