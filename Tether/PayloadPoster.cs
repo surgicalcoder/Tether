@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -28,18 +29,17 @@ namespace Tether
             _results = results;
             _results.Add("os", "windows");
             _results.Add("agentKey", ConfigurationSingleton.Instance.Config.ServerDensityKey);
+            _results.Add("collection_timestamp", (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
 
             try
             {
                 _results.Add("internalHostname", Environment.MachineName);
-            }
-            catch (InvalidOperationException)
-            {
-            }
+            } catch (InvalidOperationException) {}
 
             try
             {
                 var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
                 if (assemblyVersion.ToString() == "0.0.0.0")
                 {
                     _results.Add("agentVersion", "tether-x");
@@ -66,15 +66,21 @@ namespace Tether
             var payload = JsonConvert.SerializeObject(_results);
             var hash = MD5Hash(payload);
 
-            // TODO: this is for quick testing; we'll need to add proxy 
-            //       settings, read the response, etc.
+            var data = new NameValueCollection { { "payload", payload } };
+
+            logger.Trace(payload);
+
+            data.Add("hash", hash);
+
+
+            TransmitValues(data);
+        }
+
+        public static bool TransmitValues(NameValueCollection data)
+        {
+            bool successful = false;
             using (var client = new WebClient())
             {
-                var data = new NameValueCollection {{"payload", payload}};
-
-                logger.Trace(payload);
-
-                data.Add("hash", hash);
                 var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
                 logger.Info($"Posting to {url}");
 
@@ -89,10 +95,36 @@ namespace Tether
                 if (responseText != "OK" && responseText != "\"OK\"")
                 {
                     logger.Error($"URL {url} returned: {responseText}");
+
+                    SavePayloadForRetransmission(data);
+                }
+                else
+                {
+                    successful = true;
                 }
 
                 logger.Trace(responseText);
             }
+
+            return successful;
+        }
+
+        private static void SavePayloadForRetransmission(NameValueCollection data)
+        {
+            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var retransmitRootPath = Path.Combine(basePath, "_retransmit");
+            var zeroPath = Path.Combine(retransmitRootPath, "0");
+
+            Directory.CreateDirectory(retransmitRootPath);
+            Directory.CreateDirectory(zeroPath);
+
+            for (int i = 0; i < ConfigurationSingleton.Instance.Config.RetriesCount; i++)
+            {
+                Directory.CreateDirectory(Path.Combine(retransmitRootPath, i.ToString()));
+            }
+
+            File.WriteAllText(Path.Combine(zeroPath, DateTime.Now.ToString("O") + ".json"),  JsonConvert.SerializeObject(data));
         }
 
         private static string MD5Hash(string input)
@@ -112,4 +144,6 @@ namespace Tether
 
         private IDictionary<string, object> _results;
     }
+    
+
 }

@@ -26,7 +26,6 @@ namespace Tether
                 var tempPath = Path.Combine(basePath, "plugins", "_temp");
                 if (Directory.Exists(tempPath))
                 {
-
                     if (Directory.GetFiles(tempPath).Any())
                     {
                         foreach (var file in Directory.GetFiles(tempPath))
@@ -34,7 +33,6 @@ namespace Tether
                             File.Move(file, Path.Combine(basePath, "plugins", Path.GetFileName(file) ) );
                         }
                     }
-
                     Directory.Delete(tempPath, true);
                 }
 
@@ -51,7 +49,15 @@ namespace Tether
                                 JobBuilder.Create<ManifestRegularCheck>().Build())
                             .AddTrigger(() => TriggerBuilder.Create()
                                 .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
-                                    .WithIntervalInMinutes(5)
+                                    .WithIntervalInSeconds(Config.ConfigurationSingleton.Instance.Config.ManifestCheckInterval)
+                                    .RepeatForever())
+                                .Build()));
+
+                        service.ScheduleQuartzJob(b => b.WithJob(() =>
+                                JobBuilder.Create<ResenderJob>().Build())
+                            .AddTrigger(() => TriggerBuilder.Create()
+                                .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
+                                    .WithIntervalInSeconds(Config.ConfigurationSingleton.Instance.Config.RetriesResendInterval)
                                     .RepeatForever())
                                 .Build()));
                     });
