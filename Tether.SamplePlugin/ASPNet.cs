@@ -10,10 +10,7 @@ namespace Tether.SamplePlugin
 {
     public class ASPNet : ICheck
     {
-        public string Key
-        {
-            get { return "ASPNET"; }
-        }
+        public string Key => "ASPNET";
 
         public object DoCheck()
         {
