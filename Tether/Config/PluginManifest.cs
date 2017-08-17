@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Tether
+namespace Tether.Config
 {
     public class PluginManifest
     {

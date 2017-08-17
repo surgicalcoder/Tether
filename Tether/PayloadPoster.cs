@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using NLog;
+using Tether.Config;
 
 namespace Tether
 {

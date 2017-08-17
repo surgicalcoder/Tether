@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Fluent;
+using Tether.Config;
 using Tether.CoreChecks;
 using Tether.CoreSlices;
 using Tether.Plugins;

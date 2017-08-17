@@ -93,13 +93,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="ConfigurationSingleton.cs" />
+    <Compile Include="Config\Configuration.cs" />
+    <Compile Include="Config\ConfigurationSingleton.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="ManifestRegularCheck.cs" />
     <Compile Include="PayloadPoster.cs" />
-    <Compile Include="PluginManifest.cs" />
-    <Compile Include="PluginManifestItem.cs" />
+    <Compile Include="Config\PluginManifest.cs" />
+    <Compile Include="Config\PluginManifestItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />

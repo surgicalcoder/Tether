@@ -12,6 +12,7 @@ using Quartz;
 using SharpCompress.Archive;
 using SharpCompress.Archive.Zip;
 using SharpCompress.Common;
+using Tether.Config;
 
 namespace Tether
 {
@@ -26,17 +27,15 @@ namespace Tether
         {
             try
             {
+                if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
+                {
+                    return;
+                }
                 var pluginPath = Path.Combine(basePath, "plugins");
                 var tempPluginPath = Path.Combine(pluginPath, "_temp");
 
                 string contents;
                 var client = new WebClient();
-
-                if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
-                {
-                    return;
-                }
-
                 if (ConfigurationSingleton.Instance.Config.PluginManifestLocation.StartsWith("http"))
                 {
                     contents = client.DownloadString(ConfigurationSingleton.Instance.Config.PluginManifestLocation);

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using NLog;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
-namespace Tether
+namespace Tether.Config
 {
     public sealed class ConfigurationSingleton
     {

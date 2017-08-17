@@ -1,4 +1,4 @@
-namespace Tether
+namespace Tether.Config
 {
     public class PluginManifestItem
     {
