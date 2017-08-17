@@ -10,15 +10,14 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "networkTraffic"; }
-        }
+        public string Key => "networkTraffic";
 
         public object DoCheck()
         {
             IDictionary<string, Dictionary<string, long>> results = new Dictionary<string, Dictionary<string, long>>();
-            logger.Info("Hash code: {0}", _networkTrafficStore.GetHashCode());
+
+            logger.Trace($"Hash code: {_networkTrafficStore.GetHashCode()}");
+
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
             foreach (var nic in interfaces)
@@ -58,10 +57,8 @@ namespace Tether.CoreChecks
                     {
                         results.Add(key, new Dictionary<string, long>());
 
-                        // we need to check if these have overflowed
-                        // AGENT-199
-                        logger.Info("received: {0}", key + ": " + received.ToString());
-                        logger.Info("Previous: {0}", key + ": " + _networkTrafficStore[key]["recv_bytes"].ToString());
+                        logger.Debug($"received: {key}: {received}");
+                        logger.Debug($"Previous: {key}: {_networkTrafficStore[key]["recv_bytes"]}");
 
                         var recv_overflow = this.CheckForOverflow("recv", _networkTrafficStore[key], received);
                         var trans_overflow = this.CheckForOverflow("trans", _networkTrafficStore[key], sent);
@@ -92,7 +89,7 @@ namespace Tether.CoreChecks
         /// <param name="store">Past results</param>
         /// <param name="currentValue">current value from the results</param>
         /// <returns>Value with overflow taken into account</returns>
-        public List<long> CheckForOverflow(string toCheck, Dictionary<string, long> store, long currentValue)
+        private List<long> CheckForOverflow(string toCheck, Dictionary<string, long> store, long currentValue)
         {
             // make up the strings we need to check in the dictionaries
             var bytesString = toCheck + "_bytes";
@@ -102,18 +99,11 @@ namespace Tether.CoreChecks
             // so if we subtract that in this situation, we'll get the actual delta
             if (currentValue < store[bytesString])
             {
-
                 store[bytesString] -= UInt32.MaxValue;
             }
 
-            var values = new List<long>();
-
-            // calculate the delta
-            values.Add(currentValue - store[bytesString]);
-
-            // we need the 'raw' value for the next time round
-            values.Add(currentValue);
-
+            var values = new List<long> {currentValue - store[bytesString], currentValue};
+            
             return values;
 
         }

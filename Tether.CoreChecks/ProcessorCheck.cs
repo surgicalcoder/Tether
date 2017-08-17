@@ -18,26 +18,21 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "loadAvrg"; }
-        }
+        public string Key => "loadAvrg";
 
-        public override IDictionary<string, string> Names
-        {
-            get { return _names; }
-        }
+        public override IDictionary<string, string> Names => _names;
 
         public ProcessorCheck() : base()
         {
-            _names = new Dictionary<string, string>();
-            _names.Add("Processor", "% Processor Time");
-            _names.Add("Processore", "% Tempo processore");
+            _names = new Dictionary<string, string>
+            {
+                {"Processor", "% Processor Time"}
+            };
 
             try
             {
                 _values = new List<float>();
-                _timer = new System.Timers.Timer(60000);
+                _timer = new Timer(60000);
 
                 _timer.Elapsed += Timer_Elapsed;
                 _timer.Enabled = true;
@@ -118,11 +113,11 @@ namespace Tether.CoreChecks
 
             if (count > 0)
             {
-                return string.Format("{0:0.00}", sum / count);
+                return $"{sum / count:0.00}";
             }
             else
             {
-                return string.Format("{0:0.00}", 0);
+                return $"{0:0.00}";
             }
         }
 

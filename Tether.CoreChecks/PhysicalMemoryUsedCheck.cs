@@ -10,10 +10,7 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "memPhysUsed"; }
-        }
+        public string Key => "memPhysUsed";
 
         public object DoCheck()
         {
@@ -25,8 +22,8 @@ namespace Tether.CoreChecks
                 {
                     foreach (var memory in list)
                     {
-                        ulong total = (ulong)memory.GetPropertyValue("TotalVisibleMemorySize");
-                        ulong free = (ulong)memory.GetPropertyValue("FreePhysicalMemory");
+                        var total = (ulong)memory.GetPropertyValue("TotalVisibleMemorySize");
+                        var free = (ulong)memory.GetPropertyValue("FreePhysicalMemory");
                         used = (total - free) / 1024;
                     }
                     return used;

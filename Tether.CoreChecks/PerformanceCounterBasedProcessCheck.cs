@@ -47,9 +47,9 @@ namespace Tether.CoreChecks
                 }
             }
 
-            string[] names = category.GetInstanceNames();
+            var names = category.GetInstanceNames();
             var results = new ArrayList();
-            ArrayList sysProcesses = new ArrayList(3) { "System", "Idle", "_Total", "logon.scr" };
+            var sysProcesses = new ArrayList(3) { "System", "Idle", "_Total", "logon.scr" };
 
             foreach (string name in names)
             {
@@ -93,14 +93,14 @@ namespace Tether.CoreChecks
         {
             try
             {
-                using (ManagementObjectSearcher query = new ManagementObjectSearcher(string.Format("SELECT * FROM Win32_Process WHERE ProcessID = {0}", processId)))
+                using (ManagementObjectSearcher query = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ProcessID = {processId}"))
                 {
                     foreach (ManagementObject process in query.Get())
                     {
                         var outParameters = process.InvokeMethod("GetOwner", null, null);
                         if (outParameters["User"] != null)
                         {
-                            return string.Format(@"{0}\{1}", outParameters["Domain"], outParameters["User"]);
+                            return $@"{outParameters["Domain"]}\{outParameters["User"]}";
                         }
                     }
                 }

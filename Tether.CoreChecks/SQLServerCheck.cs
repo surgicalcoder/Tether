@@ -26,77 +26,74 @@ namespace Tether.CoreChecks
             }
 
             // Locks.
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Average Wait Time (ms)", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Lock Requests/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Lock Timeouts (timeout > 0)/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Lock Timeouts/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Lock Wait Time (ms)", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Lock Waits/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Locks", _customPrefix), "Number of Deadlocks/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Average Wait Time (ms)", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Lock Requests/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Lock Timeouts (timeout > 0)/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Lock Timeouts/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Lock Wait Time (ms)", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Lock Waits/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Locks", "Number of Deadlocks/sec", "_Total");
 
             // Databases.
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Data File(s) Size (KB)", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log File(s) Size (KB)", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log File(s) Used Size (KB)", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Percent Log Used", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Active Transactions", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Transactions/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Repl. Pending Xacts", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Repl. Trans. Rate", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Cache Reads/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Cache Hit Ratio", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Bulk Copy Rows/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Bulk Copy Throughput/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Backup/Restore Throughput/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "DBCC Logical Scan Bytes/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Shrink Data Movement Bytes/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Flushes/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Bytes Flushed/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Flush Waits/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Flush Wait Time", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Truncations", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Growths", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Databases", _customPrefix), "Log Shrinks", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Data File(s) Size (KB)", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log File(s) Size (KB)", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log File(s) Used Size (KB)", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Percent Log Used", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Active Transactions", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Transactions/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Repl. Pending Xacts", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Repl. Trans. Rate", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Cache Reads/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Cache Hit Ratio", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Bulk Copy Rows/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Bulk Copy Throughput/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Backup/Restore Throughput/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "DBCC Logical Scan Bytes/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Shrink Data Movement Bytes/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Flushes/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Bytes Flushed/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Flush Waits/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Flush Wait Time", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Truncations", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Growths", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Databases", "Log Shrinks", "_Total");
 
             // Errors.
-            AddPerformanceCounter(string.Format("{0}:SQL Errors", _customPrefix), "Errors/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:SQL Errors", "Errors/sec", "_Total");
 
             // Plan cache.
-            AddPerformanceCounter(string.Format("{0}:Plan Cache", _customPrefix), "Cache Hit Ratio", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Plan Cache", _customPrefix), "Cache Pages", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Plan Cache", _customPrefix), "Cache Object Counts", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Plan Cache", _customPrefix), "Cache Objects in use", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Plan Cache", "Cache Hit Ratio", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Plan Cache", "Cache Pages", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Plan Cache", "Cache Object Counts", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Plan Cache", "Cache Objects in use", "_Total");
 
             // Cursor manager.
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cache Hit Ratio", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cached Cursor Counts", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cursor Cache Use Counts/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cursor Requests/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Active cursors", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cursor memory usage", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Cursor worktable usage", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Cursor Manager by Type", _customPrefix), "Number of active cursor plans", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cache Hit Ratio", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cached Cursor Counts", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cursor Cache Use Counts/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cursor Requests/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Active cursors", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cursor memory usage", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Cursor worktable usage", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Cursor Manager by Type", "Number of active cursor plans", "_Total");
 
             // Broker.
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Tasks Started/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Tasks Running", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Tasks Aborted/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Task Limit Reached/sec", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Task Limit Reached", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Broker Activation", _customPrefix), "Stored Procedures Invoked/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Tasks Started/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Tasks Running", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Tasks Aborted/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Task Limit Reached/sec", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Task Limit Reached", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Broker Activation", "Stored Procedures Invoked/sec", "_Total");
 
             // Catalogger.
-            AddPerformanceCounter(string.Format("{0}:Catalog Metadata", _customPrefix), "Cache Hit Ratio", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Catalog Metadata", _customPrefix), "Cache Entries Count", "_Total");
-            AddPerformanceCounter(string.Format("{0}:Catalog Metadata", _customPrefix), "Cache Entries Pinned Count", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Catalog Metadata", "Cache Hit Ratio", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Catalog Metadata", "Cache Entries Count", "_Total");
+            AddPerformanceCounter($"{_customPrefix}:Catalog Metadata", "Cache Entries Pinned Count", "_Total");
         }
         #endregion
 
         #region ICheck Members
-        public string Key
-        {
-            get { return "sqlServer"; }
-        }
+        public string Key => "sqlServer";
 
         public object DoCheck()
         {

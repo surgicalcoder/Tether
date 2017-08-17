@@ -14,10 +14,7 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "processes"; }
-        }
+        public string Key => "processes";
 
         public ProcessCheck()
         {
@@ -38,16 +35,17 @@ namespace Tether.CoreChecks
                         var imageName = (string)process.GetPropertyValue("Name");
 
                         // Ignore System Idle Process for now
-                        if (imageName.ToString().ToLower() == "system idle process")
+                        if (imageName.ToLower() == "system idle process")
                         {
                             continue;
                         }
 
                         var fullUserName = string.Empty;
                         var outParameters = process.InvokeMethod("GetOwner", null, null);
+
                         if (outParameters["User"] != null)
                         {
-                            fullUserName = string.Format(@"{0}\{1}", outParameters["Domain"], outParameters["User"]);
+                            fullUserName = $@"{outParameters["Domain"]}\{outParameters["User"]}";
                         }
 
                         ulong[] stats = null;
@@ -60,14 +58,17 @@ namespace Tether.CoreChecks
                             logger.Info("ProcessID {0} appears to have gone missing, proceeding without it", processId.ToString());
                             continue;
                         }
+
                         var cpuPercentage = stats[0];
-                        ulong workingSet = stats[1];
-                        decimal totalMemory = (decimal)_totalMemory;
+                        var workingSet = stats[1];
+
+                        var totalMemory = _totalMemory;
 
                         decimal memoryPercentage = 0;
+
                         if (totalMemory > 0)
                         {
-                            memoryPercentage = Decimal.Round(((decimal)workingSet / totalMemory * 100), 2);
+                            memoryPercentage = Decimal.Round((decimal)workingSet / totalMemory * 100, 2);
                         }
 
                         results.Add(new object[] { processId, imageName, fullUserName, cpuPercentage, memoryPercentage, workingSet });
