@@ -9,10 +9,7 @@ namespace Tether.CoreChecks
     {
         #region ICheck Members
 
-        public string Key
-        {
-            get { return "systemStats"; }
-        }
+        public string Key => "systemStats";
 
         public object DoCheck()
         {
