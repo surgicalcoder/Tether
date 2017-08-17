@@ -6,11 +6,13 @@ namespace Tether
 
         public string ServerDensityKey { get; set; }
 
+        public Configuration()
+        {
+            CheckInterval = 60;
+        }
 
         public int CheckInterval { get; set; }
 
-        public string PluginManifestLocation { get; set; }
-        
-        
+        public string PluginManifestLocation { get; set; }        
     }
 }

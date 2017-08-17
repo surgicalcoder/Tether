@@ -1,6 +1,6 @@
 {
     "ServerDensityUrl": "https://accountname.serverdensity.io",
     "ServerDensityKey": "[Machine Key goes in here!]",
-    "CheckInterval": 60,
+    "CheckInterval": "Wibble!",
     "PluginManifestLocation": ""
 }

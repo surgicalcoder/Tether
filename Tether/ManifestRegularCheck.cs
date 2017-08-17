@@ -30,7 +30,7 @@ namespace Tether
                 var tempPluginPath = Path.Combine(pluginPath, "_temp");
 
                 string contents;
-                WebClient client = new WebClient();
+                var client = new WebClient();
 
                 if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
                 {
@@ -114,7 +114,7 @@ namespace Tether
                 if (requiresServiceRestart)
                 {
 
-                    var strCmdText = "/C net stop ThreeOneThree.Tether & net start ThreeOneThree.Tether";
+                    var strCmdText = "/C net stop Tether & net start Tether";
                     var info = new ProcessStartInfo("CMD.exe", strCmdText)
                     {
                         WorkingDirectory = pluginPath

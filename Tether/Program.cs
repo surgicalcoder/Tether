@@ -14,7 +14,7 @@ namespace Tether
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private static string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        private static string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
 
         static void Main(string[] args)
@@ -47,13 +47,19 @@ namespace Tether
                         service.WhenStarted((a, control) => a.Start(control));
                         service.WhenStopped((a, control) => a.Stop(control));
 
-                        service.ScheduleQuartzJob(b => b.WithJob(() => JobBuilder.Create<ManifestRegularCheck>().Build()).AddTrigger(() => TriggerBuilder.Create().WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow().WithIntervalInMinutes(5).RepeatForever()).Build()));
+                        service.ScheduleQuartzJob(b => b.WithJob(() =>
+                                JobBuilder.Create<ManifestRegularCheck>().Build())
+                            .AddTrigger(() => TriggerBuilder.Create()
+                                .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
+                                    .WithIntervalInMinutes(5)
+                                    .RepeatForever())
+                                .Build()));
                     });
                     x.RunAsLocalSystem();
                     x.StartAutomatically();
-                    x.SetDescription("ThreeOneThree.Tether");
-                    x.SetDisplayName("ThreeOneThree.Tether");
-                    x.SetServiceName("ThreeOneThree.Tether");
+                    x.SetDescription("Tether");
+                    x.SetDisplayName("Tether");
+                    x.SetServiceName("Tether");
 
                     x.EnableServiceRecovery(
                         r =>

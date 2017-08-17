@@ -26,7 +26,7 @@ This will automatically download Tether, the Tether installer, and install it to
 
 ## Manual Installation Instructions
 
-Grab a build, either build yourself or from the AppVeyor link at the bottom of this page (I've tested this only with Visual Studio 2015, but it should work with other versions, your mileage may vary), and it should produce you some files in the bin/Debug folder. 
+Grab a build, either build yourself or from the AppVeyor link at the bottom of this page (I've tested this only with Visual Studio 2017, but it should work with other versions, your mileage may vary), and it should produce you some files in the bin/Debug folder. 
 
 Copy these to your server or servers, put into a directory, then edit settings: 
 
@@ -69,13 +69,13 @@ That means it has happily registered it self as a Windows Service, and can be st
 
 ### To start
 
-	net start ThreeOneThree.Tether
+	net start Tether
 
-You can also run this as a command line, and not through Windows Services, simply by running ThreeOneThree.Tether.exe
+You can also run this as a command line, and not through Windows Services, simply by running Tether.exe
 
 ### To stop:
 
-	net stop ThreeOneThree.Tether
+	net stop Tether
 
 # Plugin Framework
 
