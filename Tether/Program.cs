@@ -23,6 +23,16 @@ namespace Tether
             slices = new List<string>();
         }
 
+        public dynamic PerformCheck(string checkName)
+        {
+            if (string.IsNullOrWhiteSpace(checkName))
+            {
+                throw new ArgumentException("message", nameof(checkName));
+            }
+
+            return CheckTypes[checkName].DoCheck() as dynamic;
+        }
+
         public List<string> LoadSlices(string path)
         {
             Assembly asm = Assembly.LoadFrom(path);
@@ -52,8 +62,10 @@ namespace Tether
             {
                 foreach (var type in enumerable)
                 {
-                    var check = Activator.CreateInstance(type) as ICheck;
-                    CheckTypes.Add(type.FullName, check);
+                    if (Activator.CreateInstance(type) is ICheck check)
+                    {
+                        CheckTypes.Add(check.Key, check);
+                    }
                 }
 
                 var items = CheckTypes.Select(f => f.Key).ToList();

@@ -45,9 +45,9 @@ namespace Tether
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
-			ICheckTypeList = new List<string>(); sliceCheckList = new List<string>();
-
-             //sliceTypes = new List<Type>();
+			ICheckTypeList = new List<string>();
+            sliceCheckList = new List<string>();
+            
 
              sdCoreChecks = new List<ICheck>();
 			pluginDetectionThread = new Thread(DetectAndCreate);
@@ -62,8 +62,8 @@ namespace Tether
 
 			CreateBaseChecks();
 		}
-
-		private void CreateBaseChecks()
+	    InstanceProxy instanceProxy = null;
+        private void CreateBaseChecks()
 		{
 			logger.Info("Creating Base Checks...");
 
@@ -116,7 +116,7 @@ namespace Tether
 
             var di = new DirectoryInfo(pluginPath);
 			var fileInfo = di.GetFiles("*.dll");
-		    InstanceProxy instanceProxy=null;
+		    
 
             if (fileInfo.Any())
 		    {
@@ -141,17 +141,17 @@ namespace Tether
 			{
 				try
 				{
-                    AssemblyDefinition def = AssemblyDefinition.ReadAssembly(info.FullName);
+                    var def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => r.FullName == typeof(ICheck).FullName));
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => r.FullName == typeof(ICheck).FullName)).ToList();
                     
                     var isPlugin = false;
 
-				    foreach (var type in it)
-                    {
-                        var res = instanceProxy.LoadLibrary(type.Module.FullyQualifiedName);
-                        ICheckTypeList.Add(res);
-                        isPlugin = true;
+				    if (it.Any())
+				    {
+				        var res = instanceProxy.LoadLibrary(info.FullName);
+				        ICheckTypeList.Add(res);
+				        isPlugin = true;
                     }
 
 				    var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
@@ -415,23 +415,24 @@ namespace Tether
          //                   ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
 					    //}
 
-						//var result = check.DoCheck();
+					    var result = instanceProxy.PerformCheck(check);
 
-						//if (result == null)
-						//{
-						//	return;
-						//}
-						//if (pluginCollection.ContainsKey(check.Key))
-						//{
-						//	logger.Warn("Key already exists for plugin " + check.Key + " of type " + check.GetType());
-						//	pluginCollection.Add(check.Key + "2", result);
-						//}
-						//else
-						//{
-						//	pluginCollection.Add(check.Key, result);
-						//}
+						if (result == null)
+						{
+							return;
+						}
 
-						logger.Debug($"{check.GetType()}: end");
+                        if (pluginCollection.ContainsKey(check))
+                        {
+                            logger.Warn("Key already exists for plugin " + check + " of type " + check.GetType());
+                            pluginCollection.Add(check + "2", result);
+                        }
+                        else
+                        {
+                            pluginCollection.Add(check, result);
+                        }
+
+                        logger.Debug($"{check.GetType()}: end");
 					}
 					catch (Exception ex)
 					{
@@ -443,18 +444,21 @@ namespace Tether
 			logger.Info("Generating SD compatible names for slices.");
 
 			Parallel.ForEach(
-				sliceTypes,
+			    sliceCheckList,
 				type =>
 				{
 					try
 					{
-						MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
-						var invoke = method.Invoke(this, null) as dynamic;
-						objList.Add(invoke);
+
+						//MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
+
+      //                  var invoke = method.Invoke(this, null) as dynamic;
+
+      //                  objList.Add(invoke);
 					}
 					catch (Exception exception)
 					{
-						logger.Error(exception, $"Error during slice {type.FullName}");
+						logger.Error(exception, $"Error during slice {type}");
 					}
 
 				});
