@@ -7,13 +7,16 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Reflection;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Fluent;
+using TaskRemoting;
 using Tether.Config;
 using Tether.CoreChecks;
 using Tether.CoreSlices;
@@ -34,8 +37,9 @@ namespace Tether
 		private List<Type> sliceTypes;
 		Thread pluginDetectionThread;
 		List<ICheck> sdCoreChecks;
+        private AppDomain pluginAppDomain;
 
-		public Service()
+        public Service()
 		{
 			logger.Trace("start ctor");
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
@@ -89,7 +93,7 @@ namespace Tether
 			}
 			catch (Exception e)
 			{
-				logger.Trace("Error when creating " + typeof(T).Name, e);
+				logger.Trace(e, "Error when creating " + typeof(T).Name);
 				throw;
 			}
 
@@ -117,14 +121,32 @@ namespace Tether
 			{
 				try
 				{
-					Assembly assembly = Assembly.LoadFrom(info.FullName);
 
-					var enumerable = assembly.Types(typeof(ICheck));
+                    AssemblyDefinition def = AssemblyDefinition.ReadAssembly(info.FullName);
+
+				//	Assembly assembly = Assembly.LoadFrom(info.FullName);
+
+
+				    var it = def.Modules.SelectMany(e =>
+				            e.Types.Select(f => f.Interfaces.FirstOrDefault(r => r.FullName == typeof(ICheck).FullName)))
+				        .Where(r => r != null);
+
+				    
+				    pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+				    {
+				        ApplicationBase = pluginPath,
+				        PrivateBinPath = pluginPath,
+				        PrivateBinPathProbe = pluginPath
+				    });
+
+				    //var enumerable = assembly.Types(typeof(ICheck));
 
                     bool isPlugin = false;
 
-                    foreach (var type in enumerable)
+                    foreach (var type in it)
 					{
+                        pluginAppDomain.
+                        pluginAppDomain.Invoke(delegate {  })
 						ICheckTypeList.Add(Activator.CreateInstance(type) as ICheck);
 					    isPlugin = true;
 					}
