@@ -178,17 +178,17 @@ namespace Tether
 				}
 			}
             
-		    var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
+		    //var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
 
-            PluginSettings = new Dictionary<string, dynamic>();
+      //      PluginSettings = new Dictionary<string, dynamic>();
 
-            foreach (var JsonFiles in di.GetFiles("*.json"))
-		    {
-		        if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
-		        {
-                    PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
-                }
-		    }
+      //      foreach (var JsonFiles in di.GetFiles("*.json"))
+		    //{
+		    //    if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
+		    //    {
+      //              PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
+      //          }
+		    //}
 
 			logger.Trace("Plugins found!");
 		}
