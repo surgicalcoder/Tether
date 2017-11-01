@@ -15,10 +15,31 @@ namespace Tether
     internal class InstanceProxy : MarshalByRefObject
     {
         private Dictionary<string, ICheck> CheckTypes;
+        private List<string> slices;
 
         public InstanceProxy()
         {
             CheckTypes = new Dictionary<string, ICheck>();
+            slices = new List<string>();
+        }
+
+        public List<string> LoadSlices(string path)
+        {
+            Assembly asm = Assembly.LoadFrom(path);
+
+            var types = asm.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any()).ToList();
+
+            if (!types.Any())
+            {
+                return null;
+            }
+            List<string> retr = new List<string>();
+            foreach (var type in types)
+            {
+                slices.Add(type.FullName);
+                retr.Add(type.FullName);
+            }
+            return retr;
         }
 
         public List<String> LoadLibrary(string path)
@@ -34,36 +55,15 @@ namespace Tether
                     var check = Activator.CreateInstance(type) as ICheck;
                     CheckTypes.Add(type.FullName, check);
                 }
+
                 var items = CheckTypes.Select(f => f.Key).ToList();
+
                 return items;
             }
             else
             {
                 return null;
             }
-            
-            
-            
-            
-            
-            
-            //Type[] types = asm.GetExportedTypes();
-            //Type type = types.FirstOrDefault(t => (t.FullName == "MyLibrary.MyClass"));
-            //if (type != null)
-            //{
-            //    ConstructorInfo constructor = type.GetConstructors().FirstOrDefault();
-            //    if (constructor != null)
-            //    {
-            //        object myObject = constructor.Invoke(new[] { "Yay, it works!" });
-            //        Console.WriteLine(myObject.ToString());
-
-            //        MethodInfo method = type.GetMethod("Show");
-            //        if (method != null)
-            //        {
-            //            method.Invoke(myObject, null);
-            //        }
-            //    }
-            //}
         }
     }
     class Program

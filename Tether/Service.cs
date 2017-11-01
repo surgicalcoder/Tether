@@ -32,8 +32,9 @@ namespace Tether
 		private Timer timer;
 		private bool systemStatsSent = false;
 		private List<string> ICheckTypeList;
+	    private List<string> sliceCheckList;
 	    private Dictionary<string, dynamic> PluginSettings;
-		private List<Type> sliceTypes;
+		//private List<Type> sliceTypes;
 		Thread pluginDetectionThread;
 		List<ICheck> sdCoreChecks;
         private AppDomain pluginAppDomain;
@@ -44,11 +45,11 @@ namespace Tether
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
-			ICheckTypeList = new List<string>();
+			ICheckTypeList = new List<string>(); sliceCheckList = new List<string>();
 
-			sliceTypes = new List<Type>();
+             //sliceTypes = new List<Type>();
 
-			sdCoreChecks = new List<ICheck>();
+             sdCoreChecks = new List<ICheck>();
 			pluginDetectionThread = new Thread(DetectAndCreate);
 			pluginDetectionThread.Start();
 
@@ -115,8 +116,9 @@ namespace Tether
 
             var di = new DirectoryInfo(pluginPath);
 			var fileInfo = di.GetFiles("*.dll");
+		    InstanceProxy instanceProxy=null;
 
-		    if (fileInfo.Any())
+            if (fileInfo.Any())
 		    {
 		        pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
 		        {
@@ -125,7 +127,15 @@ namespace Tether
 		            PrivateBinPathProbe = pluginPath,
 
 		        });
-            }
+		        
+		        instanceProxy = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
+		    }
+
+		    if (instanceProxy == null)
+		    {
+		        logger.Warn("Instance Proxy is null, no plugins will be loaded.");
+		        return;
+		    }
 
             foreach (var info in fileInfo)
 			{
@@ -137,35 +147,29 @@ namespace Tether
                     
                     var isPlugin = false;
 
-                    foreach (var type in it)
+				    foreach (var type in it)
                     {
-                        var instanceFromAndUnwrap = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
-
-                        if (instanceFromAndUnwrap == null)
-                        {
-                            continue;
-                        }
-
-                        var res = instanceFromAndUnwrap.LoadLibrary(type.Module.FullyQualifiedName);
+                        var res = instanceProxy.LoadLibrary(type.Module.FullyQualifiedName);
                         ICheckTypeList.Add(res);
                         isPlugin = true;
                     }
 
-
 				    var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
 
-				    //var types = assembly.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any());
-                    //foreach (var type in types)
-                    //{
-                    //	logger.Trace("Found slice " + type.FullName);
-                    //	sliceTypes.Add(type);
-                    //    isPlugin = true;
-                    //}
+                    foreach (var typeDefinition in typeDefinitions)
+				    {
+				        logger.Trace($"Found slice {typeDefinition.FullName}");
+
+				        var loadSlices = instanceProxy.LoadSlices(typeDefinition.Module.FullyQualifiedName);
+
+				        sliceCheckList.Add(loadSlices);
+
+                        isPlugin = true;
+				    }
 
                     if (isPlugin)
                     {
                         logger.Debug("Loaded plugin " + info);
-                        //ConfigurationSingleton.Instance.PluginAssemblies.Add(info);
                     }
                 }
 				catch (Exception e)
