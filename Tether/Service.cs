@@ -177,20 +177,20 @@ namespace Tether
 					logger.Warn(e, $"Unable to load {info.FullName}");
 				}
 			}
-            
-		    //var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
 
-      //      PluginSettings = new Dictionary<string, dynamic>();
+            //var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
 
-      //      foreach (var JsonFiles in di.GetFiles("*.json"))
-		    //{
-		    //    if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
-		    //    {
-      //              PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
-      //          }
-		    //}
+            //PluginSettings = new Dictionary<string, dynamic>();
 
-			logger.Trace("Plugins found!");
+            //foreach (var JsonFiles in di.GetFiles("*.json"))
+            //{
+            //    if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
+            //    {
+            //        PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
+            //    }
+            //}
+
+            logger.Trace("Plugins found!");
 		}
 		private static void DisposeAll(PerformanceCounter[] counters)
 		{
@@ -207,158 +207,7 @@ namespace Tether
 			}
 		}
 
-		private static List<T> PopulateMultiple<T>() where T : new()
-		{
-			var t = new List<T>();
-			var pcga = typeof(T).Attribute<PerformanceCounterGroupingAttribute>();
-
-			if (pcga != null)
-			{
-
-				if (pcga.UsePerformanceCounter)
-				{
-					var PerfCounter = new PerformanceCounterCategory(pcga.WMIClassName);
-
-					var instances = PerfCounter.GetInstanceNames().PerformCounterFiltering(pcga.Selector, pcga.SelectorValue, pcga.ExclusionContains);
-
-					foreach (var instance in instances)
-					{
-						var item = new T();
-
-						IEnumerable<string> names = typeof(T).GetProperties()
-												.Where(f => f.Attribute<PerformanceCounterValueExcludeAttribute>() == null)
-												.Select(
-													delegate (PropertyInfo info)
-													{
-														if (info.Attribute<PerformanceCounterValueAttribute>() != null && info.Attribute<PerformanceCounterValueAttribute>().PropertyName != null)
-														{
-															return info.Attribute<PerformanceCounterValueAttribute>().PropertyName;
-														}
-														return info.Name;
-													});
-
-						foreach (var name in names)
-						{
-							PropertyInfo property = typeof(T).GetProperties()
-									.FirstOrDefault(
-										f => (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) || 
-										f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
-
-
-							if (property.Attribute<PerformanceCounterInstanceNameAttribute>() != null)
-							{
-								property.SetValue(item, instance, null);
-							}
-							else
-							{
-								var performanceCounters = PerfCounter.GetCounters(instance);
-								try
-								{
-
-									var changeType = Convert.ChangeType(performanceCounters.FirstOrDefault(e => e.CounterName == name).NextValue(), property.PropertyType);
-
-									if (property.Attribute<PerformanceCounterValueAttribute>() != null && property.Attribute<PerformanceCounterValueAttribute>().Divisor > 0)
-									{
-										if (property.PropertyType == typeof (long))
-										{
-											changeType = (long) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-										}
-										else if (property.PropertyType == typeof (int))
-										{
-											changeType = (int) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-										}
-										else if (property.PropertyType == typeof (short))
-										{
-											changeType = (short) changeType/property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-										}
-									}
-
-									property.SetValue(item, changeType, null);
-								}
-								catch (Exception e)
-								{
-									logger.ErrorException("Error on property " + name, e);
-								}
-								finally
-								{
-									DisposeAll(performanceCounters);
-
-								}
-							}
-
-						}
-						t.Add(item);
-
-					}
-					return t;
-
-				}
-
-
-				var searcher = new ManagementObjectSearcher(pcga.WMIRoot, "SELECT * FROM " + pcga.WMIClassName);
-
-				foreach (ManagementObject var in searcher.Get().Cast<ManagementObject>().PerformFiltering(pcga.Selector, pcga.SelectorValue, pcga.ExclusionContains, pcga.Subquery))
-				{
-					var item = new T();
-
-					IEnumerable<string> names = typeof(T).GetProperties()
-						.Where(f => f.Attribute<PerformanceCounterValueExcludeAttribute>() == null)
-						.Select(
-							delegate (PropertyInfo info)
-							{
-								if (info.Attribute<PerformanceCounterValueAttribute>() != null && info.Attribute<PerformanceCounterValueAttribute>().PropertyName != null)
-								{
-									return info.Attribute<PerformanceCounterValueAttribute>().PropertyName;
-								}
-								return info.Name;
-							});
-
-					foreach (var name in names)
-					{
-						var property = typeof(T).GetProperties()
-								.FirstOrDefault(
-									f => (f.Attribute<PerformanceCounterValueAttribute>() != null && f.Attribute<PerformanceCounterValueAttribute>().PropertyName == name) || f.Name == name && f.Attribute<PerformanceCounterValueExcludeAttribute>() == null);
-
-						try
-						{
-							
-							var changeType = Convert.ChangeType(var[name], property.PropertyType);
-
-							if (property.Attribute<PerformanceCounterValueAttribute>() != null && property.Attribute<PerformanceCounterValueAttribute>().Divisor > 0)
-							{
-								if (property.PropertyType == typeof(long))
-								{
-									changeType = (long)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-								}
-								else if (property.PropertyType == typeof(int))
-								{
-									changeType = (int)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-								}
-								else if (property.PropertyType == typeof(short))
-								{
-									changeType = (short)changeType / property.Attribute<PerformanceCounterValueAttribute>().Divisor;
-								}
-							}
-
-							
-
-							property.SetValue(item , changeType, null);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e, $"Error on property {name}");
-						}
-
-					}
-					t.Add(item);
-				}
-
-
-			}
-
-
-			return t;
-		}
+		
 
 		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
@@ -412,7 +261,7 @@ namespace Tether
 					{
 					    //if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
 					    //{
-         //                   ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
+                        //  ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
 					    //}
 
 					    var result = instanceProxy.PerformCheck(check);
@@ -450,12 +299,12 @@ namespace Tether
 					try
 					{
 
-						//MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
+                        //MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
 
-      //                  var invoke = method.Invoke(this, null) as dynamic;
-
-      //                  objList.Add(invoke);
-					}
+                        //var invoke = method.Invoke(this, null) as dynamic;
+					    var invoke = instanceProxy.GetSlice(type);
+                        objList.Add(invoke);
+                    }
 					catch (Exception exception)
 					{
 						logger.Error(exception, $"Error during slice {type}");
