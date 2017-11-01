@@ -105,11 +105,11 @@ namespace Tether
                                 }
                                 catch (Exception e)
                                 {
-                                    logger.ErrorException("Error on property " + name, e);
+                                    //logger.ErrorException("Error on property " + name, e);
                                 }
                                 finally
                                 {
-                                    DisposeAll(performanceCounters);
+                                    //DisposeAll(performanceCounters);
 
                                 }
                             }
@@ -174,7 +174,7 @@ namespace Tether
                         }
                         catch (Exception e)
                         {
-                            logger.Error(e, $"Error on property {name}");
+                            //logger.Error(e, $"Error on property {name}");
                         }
 
                     }

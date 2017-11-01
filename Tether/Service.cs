@@ -189,7 +189,7 @@ namespace Tether
             //        PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
             //    }
             //}
-
+		    ICheckTypeList = ICheckTypeList.Distinct().ToList();
             logger.Trace("Plugins found!");
 		}
 		private static void DisposeAll(PerformanceCounter[] counters)
@@ -256,7 +256,7 @@ namespace Tether
 				check =>
 				{
 
-					logger.Debug("{0}: start", check.GetType());
+					logger.Debug("{0}: start", check);
 					try
 					{
 					    //if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
@@ -281,7 +281,7 @@ namespace Tether
                             pluginCollection.Add(check, result);
                         }
 
-                        logger.Debug($"{check.GetType()}: end");
+                        logger.Debug($"{check}: end");
 					}
 					catch (Exception ex)
 					{
