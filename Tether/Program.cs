@@ -18,17 +18,17 @@ namespace Tether
     internal class InstanceProxy : MarshalByRefObject
     {
         private Dictionary<string, ICheck> CheckTypes;
-        private List<string> slices;
+        private Dictionary<string, Type> slices;
 
         public InstanceProxy()
         {
             CheckTypes = new Dictionary<string, ICheck>();
-            slices = new List<string>();
+            slices = new Dictionary<string, Type>();
         }
 
         public dynamic GetSlice(string Name)
         {
-            MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { Type.GetType(Name) });
+            MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { slices[Name]  });
 
             var invoke = method.Invoke(this, null) as dynamic;
 
@@ -212,7 +212,7 @@ namespace Tether
             List<string> retr = new List<string>();
             foreach (var type in types)
             {
-                slices.Add(type.FullName);
+                slices.Add(type.FullName, type);
                 retr.Add(type.FullName);
             }
             return retr;
