@@ -16,7 +16,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Fluent;
-using TaskRemoting;
 using Tether.Config;
 using Tether.CoreChecks;
 using Tether.CoreSlices;
@@ -32,7 +31,7 @@ namespace Tether
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 		private Timer timer;
 		private bool systemStatsSent = false;
-		private List<ICheck> ICheckTypeList;
+		private List<string> ICheckTypeList;
 	    private Dictionary<string, dynamic> PluginSettings;
 		private List<Type> sliceTypes;
 		Thread pluginDetectionThread;
@@ -45,7 +44,7 @@ namespace Tether
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
-			ICheckTypeList = new List<ICheck>();
+			ICheckTypeList = new List<string>();
 
 			sliceTypes = new List<Type>();
 
@@ -117,52 +116,56 @@ namespace Tether
             var di = new DirectoryInfo(pluginPath);
 			var fileInfo = di.GetFiles("*.dll");
 
+		    if (fileInfo.Any())
+		    {
+		        pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+		        {
+		            ApplicationBase = pluginPath,
+		            PrivateBinPath = pluginPath,
+		            PrivateBinPathProbe = pluginPath,
+
+		        });
+            }
+
             foreach (var info in fileInfo)
 			{
 				try
 				{
-
                     AssemblyDefinition def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				//	Assembly assembly = Assembly.LoadFrom(info.FullName);
-
-
-				    var it = def.Modules.SelectMany(e =>
-				            e.Types.Select(f => f.Interfaces.FirstOrDefault(r => r.FullName == typeof(ICheck).FullName)))
-				        .Where(r => r != null);
-
-				    
-				    pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
-				    {
-				        ApplicationBase = pluginPath,
-				        PrivateBinPath = pluginPath,
-				        PrivateBinPathProbe = pluginPath
-				    });
-
-				    //var enumerable = assembly.Types(typeof(ICheck));
-
-                    bool isPlugin = false;
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => r.FullName == typeof(ICheck).FullName));
+                    
+                    var isPlugin = false;
 
                     foreach (var type in it)
-					{
-                        pluginAppDomain.
-                        pluginAppDomain.Invoke(delegate {  })
-						ICheckTypeList.Add(Activator.CreateInstance(type) as ICheck);
-					    isPlugin = true;
-					}
+                    {
+                        var instanceFromAndUnwrap = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
 
-					var types = assembly.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any());
-					foreach (var type in types)
-					{
-						logger.Trace("Found slice " + type.FullName);
-						sliceTypes.Add(type);
-					    isPlugin = true;
-					}
+                        if (instanceFromAndUnwrap == null)
+                        {
+                            continue;
+                        }
 
-				    if (isPlugin)
-				    {
-                        logger.Debug("Loaded plugin " + assembly.FullName);
-                        ConfigurationSingleton.Instance.PluginAssemblies.Add(assembly);
+                        var res = instanceFromAndUnwrap.LoadLibrary(type.Module.FullyQualifiedName);
+                        ICheckTypeList.Add(res);
+                        isPlugin = true;
+                    }
+
+
+				    var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
+
+				    //var types = assembly.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any());
+                    //foreach (var type in types)
+                    //{
+                    //	logger.Trace("Found slice " + type.FullName);
+                    //	sliceTypes.Add(type);
+                    //    isPlugin = true;
+                    //}
+
+                    if (isPlugin)
+                    {
+                        logger.Debug("Loaded plugin " + info);
+                        //ConfigurationSingleton.Instance.PluginAssemblies.Add(info);
                     }
                 }
 				catch (Exception e)
@@ -403,26 +406,26 @@ namespace Tether
 					logger.Debug("{0}: start", check.GetType());
 					try
 					{
-					    if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
-					    {
-                            ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
-					    }
+					    //if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
+					    //{
+         //                   ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
+					    //}
 
-						var result = check.DoCheck();
+						//var result = check.DoCheck();
 
-						if (result == null)
-						{
-							return;
-						}
-						if (pluginCollection.ContainsKey(check.Key))
-						{
-							logger.Warn("Key already exists for plugin " + check.Key + " of type " + check.GetType());
-							pluginCollection.Add(check.Key + "2", result);
-						}
-						else
-						{
-							pluginCollection.Add(check.Key, result);
-						}
+						//if (result == null)
+						//{
+						//	return;
+						//}
+						//if (pluginCollection.ContainsKey(check.Key))
+						//{
+						//	logger.Warn("Key already exists for plugin " + check.Key + " of type " + check.GetType());
+						//	pluginCollection.Add(check.Key + "2", result);
+						//}
+						//else
+						//{
+						//	pluginCollection.Add(check.Key, result);
+						//}
 
 						logger.Debug($"{check.GetType()}: end");
 					}

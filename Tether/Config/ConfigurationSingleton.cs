@@ -32,10 +32,10 @@ namespace Tether.Config
                 }
             });
 
-            PluginAssemblies = new List<Assembly>();
+            //PluginAssemblies = new List<Assembly>();
         }
 
-        public List<Assembly> PluginAssemblies { get; set; }
+        //public List<Assembly> PluginAssemblies { get; set; }
         
     }
 }
