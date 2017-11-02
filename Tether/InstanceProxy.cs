@@ -21,15 +21,38 @@ namespace Tether
             slices = new Dictionary<string, Type>();
         }
 
-        public string GetSlice(string Name)
+        public Dictionary<string, string> GetSlice(string Name)
         {
-            MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { slices[Name]  });
+            var type = slices[Name];
+            MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type  });
 
+
+            var retr = new Dictionary<string, string>();
+            // pluginCollection.Add($"Slice[{((Type) o.GetType()).GetGenericArguments()[0].Name}]-[" + GetName(o, coll) +"]", coll);
             var invoke = method.Invoke(this, null) as dynamic;
-            string str = JsonConvert.SerializeObject(invoke);
-            //dynamic obj = JsonConvert.DeserializeObject(str);
-            return str;
+            
+
+            foreach (dynamic o in invoke)
+            {
+                //foreach (var coll in o)
+                //{
+                    string str = JsonConvert.SerializeObject(o);
+                    retr.Add($"Slice[{type.Name}]-[" + GetName(o, invoke) + "]", str);
+                //}
+
+            }
+
+
+
+            return retr;
         }
+
+
+        private static dynamic GetName(dynamic o, dynamic coll)
+        {
+            return ((Type)coll.GetType()).GetProperties().Any(f => f.Name == "Name") ? ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll, null) : coll.IndexOf(o);
+        }
+
 
         private static List<T> PopulateMultiple<T>() where T : new()
         {
@@ -197,7 +220,7 @@ namespace Tether
 
         public List<string> LoadSlices(string path)
         {
-            Assembly asm = Assembly.LoadFrom(path);
+            var asm = Assembly.LoadFrom(path);
 
             var types = asm.GetTypes().Where(e => e.GetCustomAttributes(typeof(PerformanceCounterGroupingAttribute), true).Any()).ToList();
 
@@ -205,25 +228,21 @@ namespace Tether
             {
                 return null;
             }
-            List<string> retr = new List<string>();
+
+            var retr = new List<string>();
+
             foreach (var type in types)
             {
-                //if (!slices.ContainsKey(type.FullName))
-                //{
                 slices.Add(type.FullName, type);
-                //}
-                //else
-                //{
-                //    Console.WriteLine("");
-                //}
                 retr.Add(type.FullName);
             }
-            return retr;
+
+           return retr;
         }
 
         public List<String> LoadLibrary(string path)
         {
-            Assembly asm = Assembly.LoadFrom(path);
+            var asm = Assembly.LoadFrom(path);
 
             var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(ICheck).FullName)  ).ToList();
 

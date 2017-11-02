@@ -299,13 +299,11 @@ namespace Tether
 				{
 					try
 					{
-
-                        //MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
-
-                        //var invoke = method.Invoke(this, null) as dynamic;
-					    string invokeres = instanceProxy.GetSlice(type);
-					    dynamic invoke = JsonConvert.DeserializeObject(invokeres);
-                        objList.Add(invoke);
+					    var invokeres = instanceProxy.GetSlice(type);
+					    foreach (var invokere in invokeres)
+					    {
+					        pluginCollection.Add(invokere.Key, JsonConvert.DeserializeObject(invokere.Value));
+					    }
                     }
 					catch (Exception exception)
 					{
@@ -313,15 +311,6 @@ namespace Tether
 					}
 
 				});
-
-			foreach (dynamic o in objList)
-			{
-				foreach (var coll in o)
-				{
-					pluginCollection.Add($"Slice[{((Type) o.GetType()).GetGenericArguments()[0].Name}]-[" + GetName(o, coll) +"]", coll);
-				}
-				
-			}
 
 			results.Add("plugins", pluginCollection);
 
