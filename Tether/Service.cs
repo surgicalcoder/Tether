@@ -156,17 +156,18 @@ namespace Tether
 
 				    var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
 
-                    foreach (var typeDefinition in typeDefinitions)
+				    if (typeDefinitions.Any())
 				    {
-				        logger.Trace($"Found slice {typeDefinition.FullName}");
+				        logger.Trace($"Found slice {info.FullName}");
 
-				        var loadSlices = instanceProxy.LoadSlices(typeDefinition.Module.FullyQualifiedName);
+				        var loadSlices = instanceProxy.LoadSlices(info.FullName);
 
 				        sliceCheckList.Add(loadSlices);
 
-                        isPlugin = true;
-				    }
+				        isPlugin = true;
+                    }
 
+                    
                     if (isPlugin)
                     {
                         logger.Debug("Loaded plugin " + info);
@@ -302,7 +303,8 @@ namespace Tether
                         //MethodInfo method = GetType().GetMethod("PopulateMultiple", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(new Type[] { type });
 
                         //var invoke = method.Invoke(this, null) as dynamic;
-					    var invoke = instanceProxy.GetSlice(type);
+					    string invokeres = instanceProxy.GetSlice(type);
+					    dynamic invoke = JsonConvert.DeserializeObject(invokeres);
                         objList.Add(invoke);
                     }
 					catch (Exception exception)

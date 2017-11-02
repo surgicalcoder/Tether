@@ -111,6 +111,7 @@
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="Config\ConfigurationSingleton.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="InstanceProxy.cs" />
     <Compile Include="ManifestRegularCheck.cs" />
     <Compile Include="PayloadPoster.cs" />
     <Compile Include="Config\PluginManifest.cs" />

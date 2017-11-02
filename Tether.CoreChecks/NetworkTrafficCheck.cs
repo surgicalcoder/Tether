@@ -33,8 +33,8 @@ namespace Tether.CoreChecks
                 long sent = stats.BytesSent;
                 var key = nic.Name;
 
-                logger.Info("{0} - Received: {1}", key, received);
-                logger.Info("{0} - Sent: {1}", key, sent);
+                logger.Trace("{0} - Received: {1}", key, received);
+                logger.Trace("{0} - Sent: {1}", key, sent);
 
                 if (!_networkTrafficStore.ContainsKey(key))
                 {
@@ -57,8 +57,8 @@ namespace Tether.CoreChecks
                     {
                         results.Add(key, new Dictionary<string, long>());
 
-                        logger.Debug($"received: {key}: {received}");
-                        logger.Debug($"Previous: {key}: {_networkTrafficStore[key]["recv_bytes"]}");
+                        logger.Trace($"received: {key}: {received}");
+                        logger.Trace($"Previous: {key}: {_networkTrafficStore[key]["recv_bytes"]}");
 
                         var recv_overflow = this.CheckForOverflow("recv", _networkTrafficStore[key], received);
                         var trans_overflow = this.CheckForOverflow("trans", _networkTrafficStore[key], sent);
