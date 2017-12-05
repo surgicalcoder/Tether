@@ -1,24 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Management;
-using System.Reflection;
-using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Mono.Cecil;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NLog;
-using NLog.Fluent;
 using Tether.Config;
 using Tether.CoreChecks;
-using Tether.CoreSlices;
 using Tether.Plugins;
 using Topshelf;
 using Utilities.DataTypes.ExtensionMethods;
@@ -34,7 +26,6 @@ namespace Tether
 		private List<string> ICheckTypeList;
 	    private List<string> sliceCheckList;
 	    private Dictionary<string, dynamic> PluginSettings;
-		//private List<Type> sliceTypes;
 		Thread pluginDetectionThread;
 		List<ICheck> sdCoreChecks;
         private AppDomain pluginAppDomain;
@@ -49,7 +40,7 @@ namespace Tether
             sliceCheckList = new List<string>();
             
 
-             sdCoreChecks = new List<ICheck>();
+            sdCoreChecks = new List<ICheck>();
 			pluginDetectionThread = new Thread(DetectAndCreate);
 			pluginDetectionThread.Start();
 
