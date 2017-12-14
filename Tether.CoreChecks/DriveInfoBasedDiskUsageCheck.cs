@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using NLog;
 using Tether.Plugins;
@@ -20,15 +21,17 @@ namespace Tether.CoreChecks
 
             ArrayList results = new ArrayList();
 
-            Thread t = new Thread(new ThreadStart(delegate ()
+            var t = new Thread(new ThreadStart(delegate ()
             {
 
-                DriveInfo[] drives = DriveInfo.GetDrives();
+                var drives = DriveInfo.GetDrives().Where(f=>f.DriveType == DriveType.Fixed);
 
-                foreach (DriveInfo info in drives)
+                foreach (var info in drives)
                 {
                     if (!info.IsReady)
+                    {
                         continue;
+                    }
 
                     try
                     {
