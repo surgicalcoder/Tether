@@ -14,11 +14,13 @@ namespace Tether
     {
         private Dictionary<string, ICheck> CheckTypes;
         private Dictionary<string, Type> slices;
+        public Dictionary<string, dynamic> PluginSettings { get; set; }
 
         public InstanceProxy()
         {
             CheckTypes = new Dictionary<string, ICheck>();
             slices = new Dictionary<string, Type>();
+            PluginSettings = new Dictionary<string, dynamic>();
         }
 
         public Dictionary<string, string> GetSlice(string Name)
@@ -215,7 +217,17 @@ namespace Tether
                 throw new ArgumentException("message", nameof(checkName));
             }
 
-            return CheckTypes[checkName].DoCheck() as dynamic;
+            var check = CheckTypes[checkName];
+
+            if (check is IRequireConfigurationData)
+            {
+                if (PluginSettings[check.GetType().FullName] != null)
+                {
+                    (check as IRequireConfigurationData).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
+                }
+            }
+
+            return check.DoCheck() as dynamic;
         }
 
         public List<string> LoadSlices(string path)

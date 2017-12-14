@@ -108,7 +108,6 @@ Configuration data files live in the `plugins` directory, and are named `(Full C
 * [2.0.0] **BREAKING CHANGES!** Version 2 contains the following breaking changes:
     * Plugins are now loaded in their own AppDomain. This will allow future work to unload an AppDomain and reload plugins, to dynamically load new versions of plugins, without restarting the entire process. This will also allow for unloading/reloading AppDomains due to memory-leaky plugins.
     * Support for resending of old telemetry data to SD, incase of transient connectivity issues. 
-    * Currently, loading plugin config data is disabled, this needs rework.
     * Tether now requires Admin rights to run.
 * [1.0.34] Issue found by Steve Hurley @ Server Density with base IIS check not being run.
 * [1.0.33] Issue with loading dependencies from DLL's, should be resolved now.
@@ -122,7 +121,6 @@ Configuration data files live in the `plugins` directory, and are named `(Full C
 * [0.0.8] Removal of some unused settings i.e. MongoDB for Windows.
 
 ## Roadmap
-* Reintroduce plugin config data to work with seperation of AppDomains
 * Rework ability to download and install plugins from manifest
 * Pull config manifest settings from DNS TXT records (for large scale deployments)
 * Introduce ability for a "long running, cached" plugin, such as checking for windows updates.

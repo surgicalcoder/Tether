@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using Tether.Config;
 using Tether.CoreChecks;
@@ -25,7 +26,7 @@ namespace Tether
 		private bool systemStatsSent = false;
 		private List<string> ICheckTypeList;
 	    private List<string> sliceCheckList;
-	    private Dictionary<string, dynamic> PluginSettings;
+	    //private Dictionary<string, dynamic> PluginSettings;
 		Thread pluginDetectionThread;
 		List<ICheck> sdCoreChecks;
         private AppDomain pluginAppDomain;
@@ -170,34 +171,34 @@ namespace Tether
 				}
 			}
 
-            //var checkNames = ICheckTypeList.Select(e => e.GetType().FullName);
+            var checkNames = ICheckTypeList.Select(e => e.GetType().FullName).ToList();
 
-            //PluginSettings = new Dictionary<string, dynamic>();
+            foreach (var JsonFiles in di.GetFiles("*.json"))
+            {
+                if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
+                {
+                    instanceProxy.PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
+                }
+            }
 
-            //foreach (var JsonFiles in di.GetFiles("*.json"))
-            //{
-            //    if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
-            //    {
-            //        PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
-            //    }
-            //}
-		    ICheckTypeList = ICheckTypeList.Distinct().ToList();
+            ICheckTypeList = ICheckTypeList.Distinct().ToList();
+
             logger.Trace("Plugins found!");
 		}
-		private static void DisposeAll(PerformanceCounter[] counters)
-		{
-			foreach (var counter in counters)
-			{
-				try
-				{
-					counter.Dispose();
-				}
-				catch (Exception)
-				{
-					// Yeah, I know. Yeah, I really do know.
-				}
-			}
-		}
+		//private static void DisposeAll(PerformanceCounter[] counters)
+		//{
+		//	foreach (var counter in counters)
+		//	{
+		//		try
+		//		{
+		//			counter.Dispose();
+		//		}
+		//		catch (Exception)
+		//		{
+		//			// Yeah, I know. Yeah, I really do know.
+		//		}
+		//	}
+		//}
 
 		
 
