@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ICheck.cs" />
+    <Compile Include="ILongRunningCheck.cs" />
     <Compile Include="IRequireConfigurationData.cs" />
     <Compile Include="PerformanceCounterGroupingAttribute.cs" />
     <Compile Include="PerformanceCounterInstanceNameAttribute.cs" />

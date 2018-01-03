@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Reflection;
+using System.Threading;
 using Newtonsoft.Json;
 using Tether.Plugins;
 using Utilities.DataTypes.ExtensionMethods;
@@ -12,7 +13,20 @@ namespace Tether
 {
     internal class InstanceProxy : MarshalByRefObject
     {
+
+        private class LongRunningResult
+        {
+            public string Name { get; set; }
+            public dynamic Result { get; set; }
+            public DateTime LastRun { get; set; }
+            public bool IsCurrentlyRunning { get; set; }
+        }
+    
+
+
         private Dictionary<string, ICheck> CheckTypes;
+        private Dictionary<string, ILongRunningCheck> LongChecks;
+        private List<LongRunningResult> longRunningResults;
         private Dictionary<string, Type> slices;
         public Dictionary<string, dynamic> PluginSettings { get; set; }
 
@@ -21,6 +35,8 @@ namespace Tether
             CheckTypes = new Dictionary<string, ICheck>();
             slices = new Dictionary<string, Type>();
             PluginSettings = new Dictionary<string, dynamic>();
+            LongChecks = new Dictionary<string, ILongRunningCheck>();
+            longRunningResults = new List<LongRunningResult>();
         }
 
         public Dictionary<string, string> GetSlice(string Name)
@@ -30,31 +46,21 @@ namespace Tether
 
 
             var retr = new Dictionary<string, string>();
-            // pluginCollection.Add($"Slice[{((Type) o.GetType()).GetGenericArguments()[0].Name}]-[" + GetName(o, coll) +"]", coll);
             var invoke = method.Invoke(this, null) as dynamic;
             
-
             foreach (dynamic o in invoke)
             {
-                //foreach (var coll in o)
-                //{
-                    string str = JsonConvert.SerializeObject(o);
-                    retr.Add($"Slice[{type.Name}]-[" + GetName(o, invoke) + "]", str);
-                //}
-
+                string str = JsonConvert.SerializeObject(o);
+                retr.Add($"Slice[{type.Name}]-[" + GetName(o, invoke) + "]", str);
             }
-
-
 
             return retr;
         }
-
 
         private static dynamic GetName(dynamic o, dynamic coll)
         {
             return ((Type)coll.GetType()).GetProperties().Any(f => f.Name == "Name") ? ((Type)coll.GetType()).GetProperties().FirstOrDefault(f => f.Name == "Name").GetValue(coll, null) : coll.IndexOf(o);
         }
-
 
         private static List<T> PopulateMultiple<T>() where T : new()
         {
@@ -209,6 +215,69 @@ namespace Tether
             return t;
         }
 
+        public IEnumerable<Tuple<string, dynamic>> GetLongRunningChecks()
+        {
+            if (longRunningResults.Any())
+            {
+                foreach (var longRunningCheck in LongChecks)
+                {
+                    var result = longRunningResults.FirstOrDefault(f=>f.Name == longRunningCheck.Key);
+
+                    if (result != null)
+                    {
+                        var run = result.LastRun.Add(longRunningCheck.Value.CacheDuration) > DateTime.Now;
+
+                        if (run)
+                        {
+                            RunLongRunningCheck(longRunningCheck);
+                        }
+
+                        yield return new Tuple<string, dynamic>(longRunningCheck.Key,result.Result );
+                    }
+                    else
+                    {
+                        RunLongRunningCheck(longRunningCheck);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var longRunningCheck in LongChecks)
+                {
+                    RunLongRunningCheck(longRunningCheck);
+                }
+            }
+        }
+
+        private void RunLongRunningCheck(KeyValuePair<string, ILongRunningCheck> longRunningCheck)
+        {
+            var ee = longRunningResults.FirstOrDefault(f => f.Name == longRunningCheck.Key) ?? new LongRunningResult();
+
+            if (ee.IsCurrentlyRunning)
+            {
+                return;
+            }
+
+            var thread = new Thread(() =>
+            {
+                
+                ee.Name = longRunningCheck.Key;
+                ee.LastRun = DateTime.Now;
+                ee.IsCurrentlyRunning = true;
+
+                longRunningResults.RemoveAll(f => f.Name == longRunningCheck.Key);
+                longRunningResults.Add(ee);
+
+                var result = longRunningCheck.Value.DoCheck();
+
+                ee.IsCurrentlyRunning = false;
+                ee.Result = result;
+
+                longRunningResults.RemoveAll(f => f.Name == longRunningCheck.Key);
+                longRunningResults.Add(ee);
+            });
+            thread.Start();
+        }
 
         public dynamic PerformCheck(string checkName)
         {
@@ -255,6 +324,19 @@ namespace Tether
         public List<String> LoadLibrary(string path)
         {
             var asm = Assembly.LoadFrom(path);
+
+            var longRunningChecks = asm.GetTypes().Where(r => r.GetInterfaces().Any(e => e.FullName == typeof(ILongRunningCheck).FullName)).ToList();
+
+            if (longRunningChecks.Any())
+            {
+                foreach (var longRunningCheck in longRunningChecks)
+                {
+                    if (Activator.CreateInstance(longRunningCheck) is ILongRunningCheck runningCheck)
+                    {
+                        LongChecks.Add(runningCheck.Key, runningCheck);
+                    }
+                }
+            }
 
             var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(ICheck).FullName)  ).ToList();
 

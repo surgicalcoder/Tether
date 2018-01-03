@@ -242,7 +242,20 @@ namespace Tether
 
 				});
 
-			var pluginCollection = new Dictionary<string, object>();
+		    logger.Info("Polling long checks");
+
+		    var longRunningChecks = instanceProxy.GetLongRunningChecks().ToList();
+
+		    if (longRunningChecks.Any())
+		    {
+		        foreach (var lrc in longRunningChecks)
+		        {
+		            results.Add(lrc.Item1, lrc.Item2);
+		        }
+
+		    }
+
+		    var pluginCollection = new Dictionary<string, object>();
 			logger.Info("Polling Slices");
 			Parallel.ForEach(
 				ICheckTypeList,
