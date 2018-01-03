@@ -135,7 +135,7 @@ namespace Tether
 				{
                     var def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => r.FullName == typeof(ICheck).FullName)).ToList();
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningCheck).FullName))).ToList();
                     
                     var isPlugin = false;
 
@@ -242,17 +242,24 @@ namespace Tether
 
 				});
 
-		    logger.Info("Polling long checks");
-
-		    var longRunningChecks = instanceProxy.GetLongRunningChecks();
-
-		    if (longRunningChecks.Any())
+		    try
 		    {
-		        foreach (var lrc in longRunningChecks)
-		        {
-		            results.Add(lrc.Item1, lrc.Item2);
-		        }
+		        logger.Info("Polling long checks");
 
+		        var longRunningChecks = instanceProxy.GetLongRunningChecks();
+
+		        if (longRunningChecks.Any())
+		        {
+		            foreach (var lrc in longRunningChecks)
+		            {
+		                results.Add(lrc.Item1, lrc.Item2);
+		            }
+
+		        }
+		    }
+		    catch (Exception exception)
+		    {
+		        logger.Warn(exception, "Error on polling for long checks");
 		    }
 
 		    var pluginCollection = new Dictionary<string, object>();
