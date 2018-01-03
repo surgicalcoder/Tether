@@ -244,7 +244,10 @@ namespace Tether
 
 				});
 
-		    try
+
+		    var pluginCollection = new Dictionary<string, object>();
+
+            try
 		    {
 		        logger.Info("Polling long checks");
 
@@ -254,7 +257,7 @@ namespace Tether
 		        {
 		            foreach (var lrc in longRunningChecks)
 		            {
-		                results.Add(lrc.Key, JsonConvert.DeserializeObject < ExpandoObject >( lrc.Value, eoConverter));
+		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject < ExpandoObject >( lrc.Value, eoConverter));
 		            }
 
 		        }
@@ -264,7 +267,7 @@ namespace Tether
 		        logger.Warn(exception, "Error on polling for long checks");
 		    }
 
-		    var pluginCollection = new Dictionary<string, object>();
+		    
 			logger.Info("Polling Slices");
 			Parallel.ForEach(
 				ICheckTypeList,
@@ -274,11 +277,6 @@ namespace Tether
 					logger.Debug("{0}: start", check);
 					try
 					{
-					    //if (typeof(IRequireConfigurationData).IsInstanceOfType(check) && PluginSettings.ContainsKey( check.GetType().FullName ))
-					    //{
-                        //  ((IRequireConfigurationData)check).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
-					    //}
-
 					    var result = instanceProxy.PerformCheck(check);
 
 						if (result == null)
