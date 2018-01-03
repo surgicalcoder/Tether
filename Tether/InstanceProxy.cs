@@ -215,8 +215,9 @@ namespace Tether
             return t;
         }
 
-        public IEnumerable<Tuple<string, dynamic>> GetLongRunningChecks()
+        public List<Tuple<string, dynamic>> GetLongRunningChecks()
         {
+            List<Tuple<string, dynamic>> results = new List<Tuple<string, dynamic>>();
             if (longRunningResults.Any())
             {
                 foreach (var longRunningCheck in LongChecks)
@@ -232,7 +233,7 @@ namespace Tether
                             RunLongRunningCheck(longRunningCheck);
                         }
 
-                        yield return new Tuple<string, dynamic>(longRunningCheck.Key,result.Result );
+                        results.Add(new Tuple<string, dynamic>(longRunningCheck.Key, result.Result));
                     }
                     else
                     {
@@ -247,6 +248,8 @@ namespace Tether
                     RunLongRunningCheck(longRunningCheck);
                 }
             }
+
+            return results;
         }
 
         private void RunLongRunningCheck(KeyValuePair<string, ILongRunningCheck> longRunningCheck)

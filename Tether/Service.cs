@@ -244,7 +244,7 @@ namespace Tether
 
 		    logger.Info("Polling long checks");
 
-		    var longRunningChecks = instanceProxy.GetLongRunningChecks().ToList();
+		    var longRunningChecks = instanceProxy.GetLongRunningChecks();
 
 		    if (longRunningChecks.Any())
 		    {

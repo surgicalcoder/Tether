@@ -17,6 +17,7 @@ namespace Tether
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private static string pluginPath = Path.Combine(basePath, "plugins");
 
 
         static void Main(string[] args)
@@ -25,7 +26,7 @@ namespace Tether
             {
                 logger.Trace("Performing Host Init");
 
-                var tempPath = Path.Combine(basePath, "plugins", "_temp");
+                var tempPath = Path.Combine(pluginPath, "_temp");
                 if (Directory.Exists(tempPath))
                 {
                     if (Directory.GetFiles(tempPath).Any())
@@ -36,6 +37,12 @@ namespace Tether
                         }
                     }
                     Directory.Delete(tempPath, true);
+                }
+
+                if (!File.Exists(Path.Combine(pluginPath, "Tether.Plugins.dll")))
+                {
+                    File.Copy(Path.Combine(basePath, "Tether.Plugins.dll"), Path.Combine(pluginPath, "Tether.Plugins.dll"));
+                    File.Copy(Path.Combine(basePath, "Tether.Plugins.pdb"), Path.Combine(pluginPath, "Tether.Plugins.pdb"));
                 }
 
                 Host host = HostFactory.New(x =>
