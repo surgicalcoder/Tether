@@ -17,7 +17,7 @@ namespace Tether
         private class LongRunningResult
         {
             public string Name { get; set; }
-            public dynamic Result { get; set; }
+            public object Result { get; set; }
             public DateTime LastRun { get; set; }
             public bool IsCurrentlyRunning { get; set; }
         }
@@ -215,9 +215,9 @@ namespace Tether
             return t;
         }
 
-        public List<Tuple<string, dynamic>> GetLongRunningChecks()
+        public Dictionary<string, string> GetLongRunningChecks()
         {
-            List<Tuple<string, dynamic>> results = new List<Tuple<string, dynamic>>();
+            Dictionary<string, string> results = new Dictionary<string, string>();
             if (longRunningResults.Any())
             {
                 foreach (var longRunningCheck in LongChecks)
@@ -226,14 +226,14 @@ namespace Tether
 
                     if (result != null)
                     {
-                        var run = result.LastRun.Add(longRunningCheck.Value.CacheDuration) > DateTime.Now;
+                        var run = result.LastRun.Add(longRunningCheck.Value.CacheDuration) < DateTime.Now;
 
                         if (run)
                         {
                             RunLongRunningCheck(longRunningCheck);
                         }
 
-                        results.Add(new Tuple<string, dynamic>(longRunningCheck.Key, result.Result));
+                        results.Add(longRunningCheck.Key, JsonConvert.SerializeObject(result.Result));
                     }
                     else
                     {

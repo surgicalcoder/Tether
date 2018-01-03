@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Mono.Cecil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using NLog;
 using Tether.Config;
@@ -185,24 +187,24 @@ namespace Tether
 
             logger.Trace("Plugins found!");
 		}
-		//private static void DisposeAll(PerformanceCounter[] counters)
-		//{
-		//	foreach (var counter in counters)
-		//	{
-		//		try
-		//		{
-		//			counter.Dispose();
-		//		}
-		//		catch (Exception)
-		//		{
-		//			// Yeah, I know. Yeah, I really do know.
-		//		}
-		//	}
-		//}
+        //private static void DisposeAll(PerformanceCounter[] counters)
+        //{
+        //	foreach (var counter in counters)
+        //	{
+        //		try
+        //		{
+        //			counter.Dispose();
+        //		}
+        //		catch (Exception)
+        //		{
+        //			// Yeah, I know. Yeah, I really do know.
+        //		}
+        //	}
+        //}
 
-		
+	    ExpandoObjectConverter eoConverter = new ExpandoObjectConverter();
 
-		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
 			var results = new Dictionary<string, object>();
 			List<dynamic> objList = new List<dynamic>();
@@ -252,7 +254,7 @@ namespace Tether
 		        {
 		            foreach (var lrc in longRunningChecks)
 		            {
-		                results.Add(lrc.Item1, lrc.Item2);
+		                results.Add(lrc.Key, JsonConvert.DeserializeObject < ExpandoObject >( lrc.Value, eoConverter));
 		            }
 
 		        }
