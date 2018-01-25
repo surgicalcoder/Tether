@@ -76,7 +76,7 @@ namespace Tether
             TransmitValues(data);
         }
 
-        public static bool TransmitValues(Dictionary<string, string> data)
+        public static bool TransmitValues(Dictionary<string, string> data, bool bypassSave = false)
         {
             bool successful = false;
             using (var client = new WebClient())
@@ -112,6 +112,10 @@ namespace Tether
                 }
                 catch (Exception e)
                 {
+                    if (bypassSave)
+                    {
+                        return successful;
+                    }
                     logger.Warn(e, "Error on TransmitValues");
                     SavePayloadForRetransmission(data);
                 }

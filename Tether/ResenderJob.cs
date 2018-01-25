@@ -31,7 +31,7 @@ namespace Tether
             {
                 var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file));
 
-                var transmitValues = PayloadPoster.TransmitValues(values);
+                var transmitValues = PayloadPoster.TransmitValues(values, bypassSave:true);
 
                 if (transmitValues)
                 {
@@ -50,7 +50,7 @@ namespace Tether
 
                     int Number = Convert.ToInt32(splitPath[0]);
 
-                    if (Number == Config.ConfigurationSingleton.Instance.Config.RetriesCount)
+                    if (Number == Config.ConfigurationSingleton.Instance.Config.RetriesCount-1)
                     {
                         File.Move(file, Path.Combine(retransmitRootPath, (Number).ToString(), Path.GetFileNameWithoutExtension(file) +".failed"));
                     }
