@@ -17,6 +17,7 @@ using Tether.CoreChecks;
 using Tether.Plugins;
 using Topshelf;
 using Utilities.DataTypes.ExtensionMethods;
+using Utilities.IO.ExtensionMethods;
 using Timer = System.Timers.Timer;
 
 namespace Tether
@@ -99,6 +100,7 @@ namespace Tether
 		    sliceCheckList = new List<string>();
 
             var pluginPath = Path.Combine(basePath, "plugins");
+		    var workingPluginFolder = Path.Combine(pluginPath, "_working");
 
 			if (!Directory.Exists(pluginPath))
 			{
@@ -108,6 +110,7 @@ namespace Tether
             logger.Trace("Finding plugins");
 
             var di = new DirectoryInfo(pluginPath);
+            var workingFiles = new DirectoryInfo(workingPluginFolder);
 			var fileInfo = di.GetFiles("*.dll");
 
 
@@ -124,12 +127,29 @@ namespace Tether
 		        instanceProxy = null;
 		    }
 
-		    pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+		    if (Directory.Exists(workingPluginFolder))
 		    {
-		        ApplicationBase = pluginPath,
-		        PrivateBinPath = pluginPath,
-		        PrivateBinPathProbe = pluginPath
-		    });
+                Directory.Delete(workingPluginFolder, true);
+		    }
+
+		    Directory.CreateDirectory(workingPluginFolder);
+
+		    var wpfi = new DirectoryInfo(workingPluginFolder);
+		    wpfi.SetAttributes(FileAttributes.Hidden);
+
+		    new DirectoryInfo(pluginPath).EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).ForEachParallel(
+		        delegate (FileInfo info1)
+		        {
+		            info1.CopyTo(Path.Combine(workingPluginFolder, Path.GetFileName(info1.Name)));
+		        });
+
+
+            pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+		    {
+		        ApplicationBase = workingPluginFolder,
+		        PrivateBinPath = workingPluginFolder,
+		        PrivateBinPathProbe = workingPluginFolder
+            });
 
 		    instanceProxy = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
 
@@ -183,7 +203,7 @@ namespace Tether
 
             var checkNames = ICheckTypeList.Select(e => e.GetType().FullName).ToList();
 
-            foreach (var jsonFiles in di.GetFiles("*.json"))
+            foreach (var jsonFiles in workingFiles.GetFiles("*.json"))
             {
                 if (checkNames.Contains(Path.GetFileNameWithoutExtension(jsonFiles.Name)))
                 {
@@ -251,7 +271,7 @@ namespace Tether
 		        {
 		            foreach (var lrc in longRunningChecks)
 		            {
-		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject < ExpandoObject >( lrc.Value, eoConverter));
+		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject <ExpandoObject>( lrc.Value, eoConverter));
 		            }
 
 		        }

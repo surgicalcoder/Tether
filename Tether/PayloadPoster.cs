@@ -68,9 +68,10 @@ namespace Tether
 
             var data = new Dictionary<string, string> {{"payload", payload}, {"hash", hash}};
 
-            logger.Trace(payload);
-
-            data.Add("hash", hash);
+            if (logger.IsTraceEnabled)
+            {
+                logger.Trace(payload);
+            }
 
             TransmitValues(data);
         }
