@@ -27,6 +27,7 @@ namespace Tether
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 		private Timer timer;
 		private bool systemStatsSent = false;
+	    private bool pluginChangeDetected = false;
 		private List<string> ICheckTypeList;
 	    private List<string> sliceCheckList;
 	    //private Dictionary<string, dynamic> PluginSettings;
@@ -129,7 +130,14 @@ namespace Tether
 
 		    if (Directory.Exists(workingPluginFolder))
 		    {
-                Directory.Delete(workingPluginFolder, true);
+		        try
+		        {
+		            Directory.Delete(workingPluginFolder, true);
+		        }
+		        catch (Exception e)
+		        {
+                    logger.Warn(e, "Error when deleting working files");
+		        }
 		    }
 
 		    Directory.CreateDirectory(workingPluginFolder);
@@ -137,7 +145,7 @@ namespace Tether
 		    var wpfi = new DirectoryInfo(workingPluginFolder);
 		    wpfi.SetAttributes(FileAttributes.Hidden);
 
-		    new DirectoryInfo(pluginPath).EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).ForEachParallel(
+		    di.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).ForEachParallel(
 		        delegate (FileInfo info1)
 		        {
 		            info1.CopyTo(Path.Combine(workingPluginFolder, Path.GetFileName(info1.Name)));
@@ -159,7 +167,7 @@ namespace Tether
 		        return;
 		    }
 
-            foreach (var info in fileInfo)
+            foreach (var info in workingFiles.GetFiles("*.dll"))
 			{
 				try
 				{
@@ -213,10 +221,17 @@ namespace Tether
 
             ICheckTypeList = ICheckTypeList.Distinct().ToList();
 
+		    watcher = new FileSystemWatcher(pluginPath, "*.dll");
+            watcher.Created += delegate { pluginChangeDetected = true; };
+            watcher.Deleted += delegate { pluginChangeDetected = true; };
+            watcher.Created += delegate { pluginChangeDetected = true; };
+            watcher.Renamed += delegate { pluginChangeDetected = true; };
+		    watcher.EnableRaisingEvents = true;
+
             logger.Trace("Plugins found!");
 		}
-
-	    ExpandoObjectConverter eoConverter = new ExpandoObjectConverter();
+	    FileSystemWatcher watcher;
+        ExpandoObjectConverter eoConverter = new ExpandoObjectConverter();
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
@@ -271,7 +286,7 @@ namespace Tether
 		        {
 		            foreach (var lrc in longRunningChecks)
 		            {
-		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject <ExpandoObject>( lrc.Value, eoConverter));
+		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject <ExpandoObject>(lrc.Value, eoConverter));
 		            }
 
 		        }
@@ -359,6 +374,13 @@ namespace Tether
 	        {
                 logger.Warn(@"Memory usage of Plugin AppDomain has reached ${pluginAppDomain.MonitoringTotalAllocatedMemorySize}, reloading plugins");
                 DetectPlugins();
+	        }
+
+	        if (pluginChangeDetected)
+	        {
+                logger.Info("Plugin file change has been detected, reloading plugins");
+                DetectPlugins();
+	            pluginChangeDetected = false;
 	        }
 	    }
 
