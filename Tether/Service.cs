@@ -39,10 +39,6 @@ namespace Tether
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
-			ICheckTypeList = new List<string>();
-            sliceCheckList = new List<string>();
-            
-
             sdCoreChecks = new List<ICheck>();
 			pluginDetectionThread = new Thread(DetectAndCreate);
 			pluginDetectionThread.Start();
@@ -99,7 +95,10 @@ namespace Tether
 		private string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 		private void DetectPlugins()
 		{
-			var pluginPath = Path.Combine(basePath, "plugins");
+		    ICheckTypeList = new List<string>();
+		    sliceCheckList = new List<string>();
+
+            var pluginPath = Path.Combine(basePath, "plugins");
 
 			if (!Directory.Exists(pluginPath))
 			{
@@ -110,20 +109,29 @@ namespace Tether
 
             var di = new DirectoryInfo(pluginPath);
 			var fileInfo = di.GetFiles("*.dll");
-		    
 
-            if (fileInfo.Any())
+
+		    if (!fileInfo.Any())
 		    {
-		        pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
-		        {
-		            ApplicationBase = pluginPath,
-		            PrivateBinPath = pluginPath,
-		            PrivateBinPathProbe = pluginPath,
-
-		        });
-		        
-		        instanceProxy = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
+		        return;
 		    }
+
+		    if (pluginAppDomain != null)
+		    {
+		        AppDomain.Unload(pluginAppDomain);
+
+		        pluginAppDomain = null;
+		        instanceProxy = null;
+		    }
+
+		    pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+		    {
+		        ApplicationBase = pluginPath,
+		        PrivateBinPath = pluginPath,
+		        PrivateBinPathProbe = pluginPath
+		    });
+
+		    instanceProxy = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
 
 		    if (instanceProxy == null)
 		    {
@@ -175,11 +183,11 @@ namespace Tether
 
             var checkNames = ICheckTypeList.Select(e => e.GetType().FullName).ToList();
 
-            foreach (var JsonFiles in di.GetFiles("*.json"))
+            foreach (var jsonFiles in di.GetFiles("*.json"))
             {
-                if (checkNames.Contains(Path.GetFileNameWithoutExtension(JsonFiles.Name)))
+                if (checkNames.Contains(Path.GetFileNameWithoutExtension(jsonFiles.Name)))
                 {
-                    instanceProxy.PluginSettings.Add(Path.GetFileNameWithoutExtension(JsonFiles.Name), JObject.Parse(File.ReadAllText(JsonFiles.FullName)) as dynamic);
+                    instanceProxy.PluginSettings.Add(Path.GetFileNameWithoutExtension(jsonFiles.Name), JObject.Parse(File.ReadAllText(jsonFiles.FullName)) as dynamic);
                 }
             }
 
@@ -187,20 +195,6 @@ namespace Tether
 
             logger.Trace("Plugins found!");
 		}
-        //private static void DisposeAll(PerformanceCounter[] counters)
-        //{
-        //	foreach (var counter in counters)
-        //	{
-        //		try
-        //		{
-        //			counter.Dispose();
-        //		}
-        //		catch (Exception)
-        //		{
-        //			// Yeah, I know. Yeah, I really do know.
-        //		}
-        //	}
-        //}
 
 	    ExpandoObjectConverter eoConverter = new ExpandoObjectConverter();
 
@@ -335,9 +329,20 @@ namespace Tether
 			{
 				logger.Error(ex, "Error with sending data to SD servers");
 			}
+
+		    CheckIfNeedToReloadPlugins();
 		}
 
-		private static dynamic GetName(dynamic o, dynamic coll)
+	    private void CheckIfNeedToReloadPlugins()
+	    {
+	        if (pluginAppDomain.MonitoringTotalAllocatedMemorySize > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
+	        {
+                logger.Warn(@"Memory usage of Plugin AppDomain has reached ${pluginAppDomain.MonitoringTotalAllocatedMemorySize}, reloading plugins");
+                DetectPlugins();
+	        }
+	    }
+
+	    private static dynamic GetName(dynamic o, dynamic coll)
 		{
 			try
 			{

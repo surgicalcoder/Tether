@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using Newtonsoft.Json;
@@ -28,9 +29,9 @@ namespace Tether
 
             foreach (var file in Directory.GetFiles(retransmitRootPath, "*.json", SearchOption.AllDirectories))
             {
-                var nameValueCollection = JsonConvert.DeserializeObject<NameValueCollection>(File.ReadAllText(file));
+                var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file));
 
-                var transmitValues = PayloadPoster.TransmitValues(nameValueCollection);
+                var transmitValues = PayloadPoster.TransmitValues(values);
 
                 if (transmitValues)
                 {

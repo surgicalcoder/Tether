@@ -26,6 +26,9 @@ namespace Tether
             {
                 logger.Trace("Performing Host Init");
 
+
+                AppDomain.MonitoringIsEnabled = true;
+
                 var tempPath = Path.Combine(pluginPath, "_temp");
                 if (Directory.Exists(tempPath))
                 {

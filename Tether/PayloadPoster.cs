@@ -66,22 +66,22 @@ namespace Tether
             var payload = JsonConvert.SerializeObject(_results);
             var hash = MD5Hash(payload);
 
-            var data = new NameValueCollection { { "payload", payload } };
+            var data = new Dictionary<string, string> {{"payload", payload}, {"hash", hash}};
 
             logger.Trace(payload);
 
             data.Add("hash", hash);
 
-
             TransmitValues(data);
         }
 
-        public static bool TransmitValues(NameValueCollection data)
+        public static bool TransmitValues(Dictionary<string, string> data)
         {
             bool successful = false;
             using (var client = new WebClient())
             {
                 var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
+
                 logger.Info($"Posting to {url}");
 
                 if (WebRequest.DefaultWebProxy != null)
@@ -89,27 +89,38 @@ namespace Tether
                     client.Proxy = WebRequest.DefaultWebProxy;
                 }
 
-                byte[] response = client.UploadValues(url, "POST", data);
-                string responseText = Encoding.ASCII.GetString(response);
-
-                if (responseText != "OK" && responseText != "\"OK\"")
+                try
                 {
-                    logger.Error($"URL {url} returned: {responseText}");
 
+                    var response = client.UploadString(url, "POST", JsonConvert.SerializeObject(data));
+
+                    var responseText = response;
+
+                    if (responseText != "OK" && responseText != "\"OK\"")
+                    {
+                        logger.Error($"URL {url} returned: {responseText}");
+
+                        SavePayloadForRetransmission(data);
+                    }
+                    else
+                    {
+                        successful = true;
+                    }
+
+                    logger.Trace(responseText);
+                }
+                catch (Exception e)
+                {
+                    logger.Warn(e, "Error on TransmitValues");
                     SavePayloadForRetransmission(data);
                 }
-                else
-                {
-                    successful = true;
-                }
-
-                logger.Trace(responseText);
+                
             }
 
             return successful;
         }
 
-        private static void SavePayloadForRetransmission(NameValueCollection data)
+        private static void SavePayloadForRetransmission(Dictionary<string, string> data)
         {
             var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -124,7 +135,7 @@ namespace Tether
                 Directory.CreateDirectory(Path.Combine(retransmitRootPath, i.ToString()));
             }
 
-            File.WriteAllText(Path.Combine(zeroPath, DateTime.Now.ToString("O") + ".json"),  JsonConvert.SerializeObject(data));
+            File.WriteAllText(Path.Combine(zeroPath, DateTime.Now.ToString("O").Replace("+", "-").Replace(":", "") + ".json"),  JsonConvert.SerializeObject(data));
         }
 
         private static string MD5Hash(string input)
