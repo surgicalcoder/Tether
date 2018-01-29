@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using NLog;
 using Quartz;
@@ -96,29 +97,13 @@ namespace Tether
 
                         logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
 
-                        var zipPath = Path.Combine(pluginPath, assembly.Name + ".zip");
-
-                        Directory.CreateDirectory(pluginPath);       
-
-                        client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
-
-                        Unzip(zipPath, pluginPath);
-
-                        File.Delete(zipPath);
+                        DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                     else
                     {
                         logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
 
-                        var zipPath = Path.Combine(pluginPath, manifestItem.PluginName + ".zip");
-                        
-                        Directory.CreateDirectory(pluginPath);
-                        
-                        client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
-
-                        Unzip(zipPath, pluginPath);
-
-                        File.Delete(zipPath);
+                        DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                 }
             }
@@ -126,6 +111,19 @@ namespace Tether
             {
                 logger.Warn(e, "Error while checking Manifests");
             }
+        }
+
+        private void DownloadAndExtract(string pluginPath, WebClient client, PluginManifestItem manifestItem)
+        {
+            var zipPath = Path.Combine(pluginPath, manifestItem.PluginName + ".zip");
+
+            Directory.CreateDirectory(pluginPath);
+
+            client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
+
+            Unzip(zipPath, pluginPath);
+
+            File.Delete(zipPath);
         }
 
 
