@@ -38,14 +38,5 @@ namespace Tether.Config
 
         public List<AssemblyNameDefinition> PluginAssemblies { get; set; }
 
-        //public List<Assembly> PluginAssemblies { get; set; }
-
     }
-
-    //public class AssemblyDetails
-    //{
-    //    public string Name { get; set; }
-    //    public string Path { get; set; }
-    //    public Version Version { get; set; }
-    //}
 }

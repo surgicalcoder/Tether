@@ -84,6 +84,8 @@ namespace Tether
                     return;
                 }
 
+                List<PluginManifestItem> itemsToUpdate = new List<PluginManifestItem>();
+
                 foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
                 {
                     var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(f => f.Name == manifestItem.PluginName);
@@ -96,16 +98,23 @@ namespace Tether
                         }
 
                         logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
-
-                        DownloadAndExtract(pluginPath, client, manifestItem);
+                        itemsToUpdate.Add(manifestItem);
+                        //DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                     else
                     {
                         logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
-
+                        itemsToUpdate.Add(manifestItem);
                         DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                 }
+
+                if (itemsToUpdate.Any())
+                {
+                    logger.Debug("Waiting for cross-thread waithandle");
+                    itemsToUpdate.ForEach(item => DownloadAndExtract(pluginPath, client, item));
+                }
+
             }
             catch (Exception e)
             {
