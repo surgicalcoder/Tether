@@ -99,13 +99,11 @@ namespace Tether
 
                         logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
                         itemsToUpdate.Add(manifestItem);
-                        //DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                     else
                     {
                         logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
                         itemsToUpdate.Add(manifestItem);
-                        DownloadAndExtract(pluginPath, client, manifestItem);
                     }
                 }
 
