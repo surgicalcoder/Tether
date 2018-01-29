@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using NLog;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
@@ -32,10 +33,19 @@ namespace Tether.Config
                 }
             });
 
-            //PluginAssemblies = new List<Assembly>();
+            PluginAssemblies = new List<AssemblyNameDefinition>();
         }
 
+        public List<AssemblyNameDefinition> PluginAssemblies { get; set; }
+
         //public List<Assembly> PluginAssemblies { get; set; }
-        
+
     }
+
+    //public class AssemblyDetails
+    //{
+    //    public string Name { get; set; }
+    //    public string Path { get; set; }
+    //    public Version Version { get; set; }
+    //}
 }

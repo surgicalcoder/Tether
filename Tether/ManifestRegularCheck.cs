@@ -25,110 +25,115 @@ namespace Tether
         private string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public void Execute(IJobExecutionContext context)
         {
-            //try
-            //{
-            //    if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
-            //    {
-            //        return;
-            //    }
-            //    var pluginPath = Path.Combine(basePath, "plugins");
-            //    var tempPluginPath = Path.Combine(pluginPath, "_temp");
+            try
+            {
+                if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
+                {
+                    return;
+                }
 
-            //    string contents;
-            //    var client = new WebClient();
-            //    if (ConfigurationSingleton.Instance.Config.PluginManifestLocation.StartsWith("http"))
-            //    {
-            //        contents = client.DownloadString(ConfigurationSingleton.Instance.Config.PluginManifestLocation);
-            //    }
-            //    else
-            //    {
-            //        string localPath = ConfigurationSingleton.Instance.Config.PluginManifestLocation;
-            //        if (localPath.StartsWith("~"))
-            //        {
-            //            localPath = Path.Combine(basePath, localPath.Substring(2));
-            //        }
+                var pluginPath = Path.Combine(basePath, "plugins");
+                var tempPluginPath = Path.Combine(pluginPath, "_temp");
 
-            //        logger.Debug($"Reading Plugin Manifest from {localPath}");
+                var contents = string.Empty;
 
-            //        contents = File.ReadAllText(localPath);
-            //    }
+                var client = new WebClient();
 
-            //    var manifest = JsonConvert.DeserializeObject<PluginManifest>(contents);
+                Uri newUri;
 
-            //    if (!manifest.Items.Any())
-            //    {
-            //        logger.Debug("No items found");
-            //        return;
-            //    }
+                if (Uri.TryCreate(ConfigurationSingleton.Instance.Config.PluginManifestLocation, UriKind.Absolute, out newUri))
+                {
+                    if (newUri.Scheme == "http" || newUri.Scheme == "https")
+                    {
+                        contents = client.DownloadString(ConfigurationSingleton.Instance.Config.PluginManifestLocation);
+                    }
+                    else if (newUri.Scheme == "dns")
+                    {
 
-            //    bool requiresServiceRestart = false;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Scheme ${newUri.Scheme} is not supported");
+                    }
+                }
+                else
+                {
+                    var localPath = ConfigurationSingleton.Instance.Config.PluginManifestLocation;
+
+                    if (localPath.StartsWith("~"))
+                    {
+                        localPath = Path.Combine(basePath, localPath.Substring(2));
+                    }
+
+                    logger.Debug($"Reading Plugin Manifest from {localPath}");
+
+                    contents = File.ReadAllText(localPath);
+                }
+
+                if (string.IsNullOrWhiteSpace(contents))
+                {
+                    return;
+                }
                 
-            //    foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
-            //    {
-            //        var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(e => e.GetName().Name == manifestItem.PluginName);
+                var manifest = JsonConvert.DeserializeObject<PluginManifest>(contents);
 
-            //        if (assembly != null)
-            //        {
-            //            if (assembly.GetName().Version.ToString() != manifestItem.PluginVersion)
-            //            {
-            //                logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.GetName().Version}, expecting {manifestItem.PluginVersion}");
+                if (!manifest.Items.Any())
+                {
+                    logger.Debug("No items found");
+                    return;
+                }
 
-            //                var zipPath = Path.Combine(tempPluginPath, assembly.GetName().Name + ".zip");
+                foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
+                {
 
-            //                if (!Directory.Exists(tempPluginPath))
-            //                {
-            //                    Directory.CreateDirectory(tempPluginPath);
-            //                }
 
-            //                client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
+                    var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(f => f.Name == manifestItem.PluginName);
 
-            //                Unzip(zipPath, tempPluginPath);
+                    if (assembly != null)
+                    {
+                        if (assembly.Version.ToString() == manifestItem.PluginVersion)
+                        {
+                            continue;
+                        }
 
-            //                File.Delete(zipPath);
+                        logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
 
-            //                requiresServiceRestart = true;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
+                        var zipPath = Path.Combine(tempPluginPath, assembly.Name + ".zip");
 
-            //            var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
+                        if (!Directory.Exists(tempPluginPath))
+                        {
+                            Directory.CreateDirectory(tempPluginPath);
+                        }
 
-            //            if (!Directory.Exists(tempPluginPath))
-            //            {
-            //                Directory.CreateDirectory(tempPluginPath);
-            //            }
+                        client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
-            //            client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
+                        Unzip(zipPath, tempPluginPath);
 
-            //            Unzip(zipPath, tempPluginPath);
+                        File.Delete(zipPath);
+                    }
+                    else
+                    {
+                        logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
 
-            //            File.Delete(zipPath);
+                        var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
 
-            //            requiresServiceRestart = true;
-            //        }
-            //    }
+                        if (!Directory.Exists(tempPluginPath))
+                        {
+                            Directory.CreateDirectory(tempPluginPath);
+                        }
 
-            //    if (requiresServiceRestart)
-            //    {
+                        client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
-            //        var strCmdText = "/C net stop Tether & net start Tether";
-            //        var info = new ProcessStartInfo("CMD.exe", strCmdText)
-            //        {
-            //            WorkingDirectory = pluginPath
-            //        };
+                        Unzip(zipPath, tempPluginPath);
 
-            //        logger.Fatal("!!! GOING DOWN FOR AN UPDATE TO PLUGINS !!!");
-
-            //        Process.Start(info);
-            //    }
-
-            //}
-            //catch (Exception e)
-            //{
-            //    logger.Warn(e, "Error while checking Manifests");
-            //}
+                        File.Delete(zipPath);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Warn(e, "Error while checking Manifests");
+            }
         }
 
 

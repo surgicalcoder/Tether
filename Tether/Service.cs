@@ -57,7 +57,7 @@ namespace Tether
 	    InstanceProxy instanceProxy = null;
         private void CreateBaseChecks()
 		{
-			logger.Info("Creating Base Checks...");
+			logger.Debug("Creating Base Checks...");
 
 			sdCoreChecks.Add(CreateCheck<NetworkTrafficCheck>());
 			sdCoreChecks.Add(CreateCheck<DriveInfoBasedDiskUsageCheck>());
@@ -71,7 +71,7 @@ namespace Tether
 			sdCoreChecks.Add(CreateCheck<IOCheck>());
 			sdCoreChecks.Add(CreateCheck<IISCheck>());
 
-			logger.Info("Base Check Creation Complete...");
+			logger.Debug("Base Check Creation Complete...");
 		}
 
 		private ICheck CreateCheck<T>() where T: ICheck, new()
@@ -201,6 +201,8 @@ namespace Tether
                     if (isPlugin)
                     {
                         logger.Debug("Loaded plugin " + info);
+
+                        ConfigurationSingleton.Instance.PluginAssemblies.Add(def.Name);
                     }
                 }
 				catch (Exception e)
@@ -372,7 +374,7 @@ namespace Tether
 	    {
 	        if (pluginAppDomain.MonitoringTotalAllocatedMemorySize > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
 	        {
-                logger.Warn(@"Memory usage of Plugin AppDomain has reached ${pluginAppDomain.MonitoringTotalAllocatedMemorySize}, reloading plugins");
+                logger.Warn(@"Memory usage of Plugin AppDomain has exceeded ${pluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
                 DetectPlugins();
 	        }
 
