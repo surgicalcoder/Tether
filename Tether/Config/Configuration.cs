@@ -9,8 +9,10 @@ namespace Tether.Config
             RetriesResendInterval = 300;
             RetriesCount = 5;
             PluginMemoryLimit = 200 * 1024 * 1024; // 200 mb
+            DisableResending = false;
         }
 
+        public bool DisableResending { get; set; }
 
         public string ServerDensityUrl { get; set; }
         public string ServerDensityKey { get; set; }

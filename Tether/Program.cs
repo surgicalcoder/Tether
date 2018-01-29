@@ -65,13 +65,16 @@ namespace Tether
                                     .RepeatForever())
                                 .Build()));
 
-                        service.ScheduleQuartzJob(b => b.WithJob(() =>
-                                JobBuilder.Create<ResenderJob>().Build())
+                        if (!Config.ConfigurationSingleton.Instance.Config.DisableResending)
+                        {
+                            service.ScheduleQuartzJob(b => b.WithJob(() => JobBuilder.Create<ResenderJob>().Build())
                             .AddTrigger(() => TriggerBuilder.Create()
                                 .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
                                     .WithIntervalInSeconds(Config.ConfigurationSingleton.Instance.Config.RetriesResendInterval)
                                     .RepeatForever())
                                 .Build()));
+                        }
+
                     });
                     x.RunAsLocalSystem();
                     x.StartAutomatically();
