@@ -33,7 +33,7 @@ namespace Tether
                 }
 
                 var pluginPath = Path.Combine(basePath, "plugins");
-                var tempPluginPath = Path.Combine(pluginPath, "_temp");
+                //var tempPluginPath = Path.Combine(pluginPath, "_temp");
 
                 var contents = string.Empty;
 
@@ -49,7 +49,7 @@ namespace Tether
                     }
                     else if (newUri.Scheme == "dns")
                     {
-
+                        throw new NotImplementedException("DNS scheme is not implemented yet");
                     }
                     else
                     {
@@ -85,8 +85,6 @@ namespace Tether
 
                 foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
                 {
-
-
                     var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(f => f.Name == manifestItem.PluginName);
 
                     if (assembly != null)
@@ -98,16 +96,13 @@ namespace Tether
 
                         logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
 
-                        var zipPath = Path.Combine(tempPluginPath, assembly.Name + ".zip");
+                        var zipPath = Path.Combine(pluginPath, assembly.Name + ".zip");
 
-                        if (!Directory.Exists(tempPluginPath))
-                        {
-                            Directory.CreateDirectory(tempPluginPath);
-                        }
+                        Directory.CreateDirectory(pluginPath);       
 
                         client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
-                        Unzip(zipPath, tempPluginPath);
+                        Unzip(zipPath, pluginPath);
 
                         File.Delete(zipPath);
                     }
@@ -115,16 +110,13 @@ namespace Tether
                     {
                         logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
 
-                        var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
-
-                        if (!Directory.Exists(tempPluginPath))
-                        {
-                            Directory.CreateDirectory(tempPluginPath);
-                        }
-
+                        var zipPath = Path.Combine(pluginPath, manifestItem.PluginName + ".zip");
+                        
+                        Directory.CreateDirectory(pluginPath);
+                        
                         client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
 
-                        Unzip(zipPath, tempPluginPath);
+                        Unzip(zipPath, pluginPath);
 
                         File.Delete(zipPath);
                     }
