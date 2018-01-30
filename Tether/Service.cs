@@ -223,7 +223,9 @@ namespace Tether
 
             ICheckTypeList = ICheckTypeList.Distinct().ToList();
 
-		    watcher = new FileSystemWatcher(pluginPath, "*.dll");
+		    pluginChangeDetected = false;
+
+            watcher = new FileSystemWatcher(pluginPath, "*.dll");
             watcher.Created += delegate { pluginChangeDetected = true; };
             watcher.Deleted += delegate { pluginChangeDetected = true; };
             watcher.Created += delegate { pluginChangeDetected = true; };
@@ -390,7 +392,6 @@ namespace Tether
 	        {
                 logger.Warn($"Memory usage of Plugin AppDomain has exceeded ${pluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
                 DetectPlugins();
-	            pluginChangeDetected = false;
 	            return;
 	        }
 
@@ -398,7 +399,6 @@ namespace Tether
 	        {
                 logger.Info("Plugin file change has been detected, reloading plugins");
                 DetectPlugins();
-	            pluginChangeDetected = false;
 	        }
 	    }
 
