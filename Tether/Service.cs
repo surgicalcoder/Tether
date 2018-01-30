@@ -300,6 +300,7 @@ namespace Tether
 
 		    
 			logger.Info("Polling Slices");
+
 			Parallel.ForEach(
 				ICheckTypeList,
 				check =>
@@ -354,6 +355,19 @@ namespace Tether
 					}
 
 				});
+
+		    if (ConfigurationSingleton.Instance.Config.SubmitTetherData)
+		    {
+		        pluginCollection.Add("__tether",
+		            new
+		            {
+		                PluginAppDomainMemoryUsage = pluginAppDomain.MonitoringTotalAllocatedMemorySize,
+                        PluginAppDomainCPUUsage = pluginAppDomain.MonitoringTotalProcessorTime.ToString("g"),
+		                MainAppDomainMemoryUsage = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize,
+                        MainAppDomainCPUUsage = AppDomain.CurrentDomain.MonitoringTotalProcessorTime.ToString("g")
+		            });
+		    }
+            
 
 			results.Add("plugins", pluginCollection);
 

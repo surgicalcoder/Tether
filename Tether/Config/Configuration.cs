@@ -10,7 +10,10 @@ namespace Tether.Config
             RetriesCount = 5;
             PluginMemoryLimit = 200 * 1024 * 1024; // 200 mb
             DisableResending = false;
+            SubmitTetherData = true;
         }
+
+        public bool SubmitTetherData { get; set; }
 
         public bool DisableResending { get; set; }
 
