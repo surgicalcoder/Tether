@@ -390,6 +390,8 @@ namespace Tether
 	        {
                 logger.Warn($"Memory usage of Plugin AppDomain has exceeded ${pluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
                 DetectPlugins();
+	            pluginChangeDetected = false;
+	            return;
 	        }
 
 	        if (pluginChangeDetected)
