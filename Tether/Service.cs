@@ -22,7 +22,7 @@ using Timer = System.Timers.Timer;
 
 namespace Tether
 {
-	public class Service : ServiceControl
+    public class Service : ServiceControl
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 		private Timer timer;
@@ -30,10 +30,12 @@ namespace Tether
 	    private bool pluginChangeDetected = false;
 		private List<string> ICheckTypeList;
 	    private List<string> sliceCheckList;
-	    //private Dictionary<string, dynamic> PluginSettings;
-		Thread pluginDetectionThread;
-		List<ICheck> sdCoreChecks;
+	    
+		private List<ICheck> sdCoreChecks;
+
         private AppDomain pluginAppDomain;
+	    private InstanceProxy instanceProxy = null;
+	    private Thread pluginDetectionThread;
 
         public Service()
 		{
@@ -54,7 +56,7 @@ namespace Tether
 
 			CreateBaseChecks();
 		}
-	    InstanceProxy instanceProxy = null;
+	    
         private void CreateBaseChecks()
 		{
 			logger.Debug("Creating Base Checks...");
@@ -68,7 +70,7 @@ namespace Tether
 			sdCoreChecks.Add(CreateCheck<PhysicalMemoryCachedCheck>());
 			sdCoreChecks.Add(CreateCheck<SwapMemoryFreeCheck>());
 			sdCoreChecks.Add(CreateCheck<SwapMemoryUsedCheck>());
-			sdCoreChecks.Add(CreateCheck<IOCheck>());
+			//sdCoreChecks.Add(CreateCheck<IOCheck>());
 			sdCoreChecks.Add(CreateCheck<IISCheck>());
 
 			logger.Debug("Base Check Creation Complete...");
@@ -173,7 +175,7 @@ namespace Tether
 				{
                     var def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningCheck).FullName))).ToList();
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningPluginCheck).FullName))).ToList();
                     
                     var isPlugin = false;
 

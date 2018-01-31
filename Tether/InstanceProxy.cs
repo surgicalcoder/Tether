@@ -17,25 +17,25 @@ namespace Tether
         private class LongRunningResult
         {
             public string Name { get; set; }
-            public object Result { get; set; }
+            public List<Metric> Result { get; set; }
             public DateTime LastRun { get; set; }
             public bool IsCurrentlyRunning { get; set; }
         }
     
 
 
-        private Dictionary<string, ICheck> CheckTypes;
-        private Dictionary<string, ILongRunningCheck> LongChecks;
+        private Dictionary<string, IPluginCheck> CheckTypes;
+        private Dictionary<string, ILongRunningPluginCheck> LongChecks;
         private List<LongRunningResult> longRunningResults;
         private Dictionary<string, Type> slices;
         public Dictionary<string, dynamic> PluginSettings { get; set; }
 
         public InstanceProxy()
         {
-            CheckTypes = new Dictionary<string, ICheck>();
+            CheckTypes = new Dictionary<string, IPluginCheck>();
             slices = new Dictionary<string, Type>();
             PluginSettings = new Dictionary<string, dynamic>();
-            LongChecks = new Dictionary<string, ILongRunningCheck>();
+            LongChecks = new Dictionary<string, ILongRunningPluginCheck>();
             longRunningResults = new List<LongRunningResult>();
         }
 
@@ -81,7 +81,7 @@ namespace Tether
                         var item = new T();
 
                         IEnumerable<string> names = typeof(T).GetProperties()
-                            .Where(f => ReflectionExtensions.Attribute<PerformanceCounterValueExcludeAttribute>(f) == null)
+                            .Where(f => f.Attribute<PerformanceCounterValueExcludeAttribute>() == null)
                             .Select(
                                 delegate (PropertyInfo info)
                                 {
@@ -252,7 +252,7 @@ namespace Tether
             return results;
         }
 
-        private void RunLongRunningCheck(KeyValuePair<string, ILongRunningCheck> longRunningCheck)
+        private void RunLongRunningCheck(KeyValuePair<string, ILongRunningPluginCheck> longRunningCheck)
         {
             var ee = longRunningResults.FirstOrDefault(f => f.Name == longRunningCheck.Key) ?? new LongRunningResult();
 
@@ -328,26 +328,26 @@ namespace Tether
         {
             var asm = Assembly.LoadFrom(path);
 
-            var longRunningChecks = asm.GetTypes().Where(r => r.GetInterfaces().Any(e => e.FullName == typeof(ILongRunningCheck).FullName)).ToList();
+            var longRunningChecks = asm.GetTypes().Where(r => r.GetInterfaces().Any(e => e.FullName == typeof(ILongRunningPluginCheck).FullName)).ToList();
 
             if (longRunningChecks.Any())
             {
                 foreach (var longRunningCheck in longRunningChecks)
                 {
-                    if (Activator.CreateInstance(longRunningCheck) is ILongRunningCheck runningCheck)
+                    if (Activator.CreateInstance(longRunningCheck) is ILongRunningPluginCheck runningCheck)
                     {
                         LongChecks.Add(runningCheck.Key, runningCheck);
                     }
                 }
             }
 
-            var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(ICheck).FullName)  ).ToList();
+            var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(IPluginCheck).FullName)  ).ToList();
 
             if (enumerable.Any())
             {
                 foreach (var type in enumerable)
                 {
-                    if (Activator.CreateInstance(type) is ICheck check)
+                    if (Activator.CreateInstance(type) is IPluginCheck check)
                     {
                         CheckTypes.Add(check.Key, check);
                     }

@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether", "Tether\Tether.csproj", "{CF87A2F0-D28E-4572-A239-33FEBEA6EA18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.Plugins", "Tether.Plugins\Tether.Plugins.csproj", "{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.CoreChecks", "Tether.CoreChecks\Tether.CoreChecks.csproj", "{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.CoreSlices", "Tether.CoreSlices\Tether.CoreSlices.csproj", "{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}"
 EndProject
@@ -27,10 +25,6 @@ Global
 		{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -42,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {909DEB6F-1269-4DFF-A1D1-6E83A4522BA8}
 	EndGlobalSection
 EndGlobal

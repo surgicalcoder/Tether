@@ -111,9 +111,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Checks\DiskUsageCheck.cs" />
+    <Compile Include="Checks\DriveInfoBasedDiskUsageCheck.cs" />
+    <Compile Include="Checks\IISCheck.cs" />
+    <Compile Include="Checks\IOCheck.cs" />
+    <Compile Include="Checks\NetworkTrafficCheck.cs" />
+    <Compile Include="Checks\PerformanceCounterBasedCheck.cs" />
+    <Compile Include="Checks\PerformanceCounterBasedProcessCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryCachedCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryFreeCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryUsedCheck.cs" />
+    <Compile Include="Checks\ProcessCheck.cs" />
+    <Compile Include="Checks\ProcessorCheck.cs" />
+    <Compile Include="Checks\SQLServerCheck.cs" />
+    <Compile Include="Checks\SwapMemoryFreeCheck.cs" />
+    <Compile Include="Checks\SwapMemoryUsedCheck.cs" />
+    <Compile Include="Checks\SystemStatsCheck.cs" />
     <Compile Include="Config\Configuration.cs" />
     <Compile Include="Config\ConfigurationSingleton.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="ICheck.cs" />
     <Compile Include="InstanceProxy.cs" />
     <Compile Include="ManifestRegularCheck.cs" />
     <Compile Include="PayloadPoster.cs" />
@@ -137,10 +154,6 @@
     <None Include="PluginManifest.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tether.CoreChecks\Tether.CoreChecks.csproj">
-      <Project>{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}</Project>
-      <Name>Tether.CoreChecks</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Tether.CoreSlices\Tether.CoreSlices.csproj">
       <Project>{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}</Project>
       <Name>Tether.CoreSlices</Name>

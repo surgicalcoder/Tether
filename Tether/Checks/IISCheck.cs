@@ -26,7 +26,7 @@ namespace Tether.CoreChecks
             }
 
             float requestsPerSecond = PerformanceCounter.NextValue();
-            logger.Debug("IIS req/s is: {0}", requestsPerSecond);
+            logger.Trace("IIS req/s is: {0}", requestsPerSecond);
             return $"{requestsPerSecond:0.00}";
         }
 
