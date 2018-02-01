@@ -41,8 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICheck.cs" />
+    <Compile Include="Metric.cs" />
+    <Compile Include="ILongRunningPluginCheck.cs" />
+    <Compile Include="IPluginCheck.cs" />
     <Compile Include="IRequireConfigurationData.cs" />
+    <Compile Include="MetricType.cs" />
     <Compile Include="PerformanceCounterGroupingAttribute.cs" />
     <Compile Include="PerformanceCounterInstanceNameAttribute.cs" />
     <Compile Include="PerformanceCounterValueAttribute.cs" />

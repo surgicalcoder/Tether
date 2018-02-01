@@ -6,20 +6,6 @@ using System.Threading.Tasks;
 
 namespace Tether.Plugins
 {
-
-    public interface IPluginCheck
-    {
-        List<Metric> GetMetrics();
-    }
-
-
-    public interface ILongRunningPluginCheck
-    {
-        List<Metric> GetMetrics();
-
-        TimeSpan CacheDuration { get; }
-    }
-
     public class Metric
     {
         public Metric()
@@ -46,6 +32,11 @@ namespace Tether.Plugins
             Hostname = Environment.MachineName;
         }
 
+        public override string ToString()
+        {
+            return $"{Name}: {Value}, {nameof(Tags)}: {Tags?.Count}";
+        }
+
         public string Name { get; set; }
         public DateTime Timestamp { get; set; }
         public float Value { get; set; }
@@ -53,16 +44,4 @@ namespace Tether.Plugins
         public string Hostname { get; set; }
         public Dictionary<string, string> Tags { get; set; }
     }
-
-    public enum MetricType
-    {
-        Gague,
-        Increment,
-        Decrement,
-        Histogram,
-        Rate,
-        Count,
-        MonotonicCount
-    }
-
 }

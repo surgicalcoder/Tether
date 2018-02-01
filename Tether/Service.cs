@@ -32,6 +32,7 @@ namespace Tether
 	    private List<string> sliceCheckList;
 	    
 		private List<ICheck> sdCoreChecks;
+	    private List<IPluginCheck> sdCorePlugins;
 
         private AppDomain pluginAppDomain;
 	    private InstanceProxy instanceProxy = null;
@@ -39,7 +40,8 @@ namespace Tether
 
         public Service()
 		{
-			logger.Trace("start ctor");
+		    this.sdCorePlugins = new List<IPluginCheck>();
+		    logger.Trace("start ctor");
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
 
@@ -73,8 +75,31 @@ namespace Tether
 			//sdCoreChecks.Add(CreateCheck<IOCheck>());
 			sdCoreChecks.Add(CreateCheck<IISCheck>());
 
-			logger.Debug("Base Check Creation Complete...");
+		    sdCorePlugins.Add(CreatePluginCheck<IOCheck>());
+
+
+            logger.Debug("Base Check Creation Complete...");
 		}
+
+	    private IPluginCheck CreatePluginCheck<T>() where T : IPluginCheck, new()
+	    {
+	        logger.Trace("Creating " + typeof(T).Name);
+
+	        T item;
+	        try
+	        {
+	            item = new T();
+	        }
+	        catch (Exception e)
+	        {
+	            logger.Trace(e, "Error when creating " + typeof(T).Name);
+	            throw;
+	        }
+
+	        logger.Trace("Finished Creating " + typeof(T).Name);
+
+	        return item;
+        }
 
 		private ICheck CreateCheck<T>() where T: ICheck, new()
 		{
@@ -280,7 +305,36 @@ namespace Tether
 				});
 
 
-		    var pluginCollection = new Dictionary<string, object>();
+
+		    var pluginCollection = new List<Metric>();
+
+
+
+
+            Parallel.ForEach(sdCorePlugins, check =>
+		    {
+                logger.Trace($"{check.GetType(): start}");
+
+		        try
+		        {
+
+		            var result = check.GetMetrics();
+
+		            if (result == null || !result.Any())
+		            {
+		                return;
+		            }
+
+		            pluginCollection.Add(result);
+
+		        }
+		        catch (Exception ex)
+		        {
+		            logger.Error(ex, $"Error on {check.GetType()}");
+                }
+
+                logger.Trace($"{check.GetType(): end}");
+		    });
 
             try
 		    {
@@ -292,7 +346,8 @@ namespace Tether
 		        {
 		            foreach (var lrc in longRunningChecks)
 		            {
-		                pluginCollection.Add(lrc.Key, JsonConvert.DeserializeObject <ExpandoObject>(lrc.Value, eoConverter));
+		                var list = JsonConvert.DeserializeObject<List<Metric>>(lrc.Value);
+		                pluginCollection.Add(list);
 		            }
 
 		        }
@@ -315,22 +370,14 @@ namespace Tether
 					{
 					    var result = instanceProxy.PerformCheck(check);
 
-						if (result == null)
+						if (result == null || !result.Any())
 						{
 							return;
 						}
 
-                        if (pluginCollection.ContainsKey(check))
-                        {
-                            logger.Warn("Key already exists for plugin " + check + " of type " + check.GetType());
-                            pluginCollection.Add(check + "2", result);
-                        }
-                        else
-                        {
-                            pluginCollection.Add(check, result);
-                        }
+					    pluginCollection.Add(result);
 
-                        logger.Debug($"{check}: end");
+					    logger.Debug($"{check}: end");
 					}
 					catch (Exception ex)
 					{
@@ -341,36 +388,36 @@ namespace Tether
 
 			logger.Info("Generating SD compatible names for slices.");
 
-			Parallel.ForEach(
-			    sliceCheckList,
-				type =>
-				{
-					try
-					{
-					    var invokeres = instanceProxy.GetSlice(type);
-					    foreach (var invokere in invokeres)
-					    {
-					        pluginCollection.Add(invokere.Key, JsonConvert.DeserializeObject(invokere.Value));
-					    }
-                    }
-					catch (Exception exception)
-					{
-						logger.Error(exception, $"Error during slice {type}");
-					}
+			//Parallel.ForEach(
+			//    sliceCheckList,
+			//	type =>
+			//	{
+			//		try
+			//		{
+			//		    var invokeres = instanceProxy.GetSlice(type);
+			//		    foreach (var invokere in invokeres)
+			//		    {
+			//		        pluginCollection.Add(invokere.Key, JsonConvert.DeserializeObject(invokere.Value));
+			//		    }
+   //                 }
+			//		catch (Exception exception)
+			//		{
+			//			logger.Error(exception, $"Error during slice {type}");
+			//		}
 
-				});
+			//	});
 
-		    if (ConfigurationSingleton.Instance.Config.SubmitTetherData)
-		    {
-		        pluginCollection.Add("__tether",
-		            new
-		            {
-		                PluginAppDomainMemoryUsage = pluginAppDomain.MonitoringTotalAllocatedMemorySize,
-                        PluginAppDomainCPUUsage = pluginAppDomain.MonitoringTotalProcessorTime.ToString("g"),
-		                MainAppDomainMemoryUsage = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize,
-                        MainAppDomainCPUUsage = AppDomain.CurrentDomain.MonitoringTotalProcessorTime.ToString("g")
-		            });
-		    }
+		    //if (ConfigurationSingleton.Instance.Config.SubmitTetherData)
+		    //{
+		    //    pluginCollection.Add("__tether",
+		    //        new
+		    //        {
+		    //            PluginAppDomainMemoryUsage = pluginAppDomain.MonitoringTotalAllocatedMemorySize,
+      //                  PluginAppDomainCPUUsage = pluginAppDomain.MonitoringTotalProcessorTime.ToString("g"),
+		    //            MainAppDomainMemoryUsage = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize,
+      //                  MainAppDomainCPUUsage = AppDomain.CurrentDomain.MonitoringTotalProcessorTime.ToString("g")
+		    //        });
+		    //}
             
 
 			results.Add("plugins", pluginCollection);

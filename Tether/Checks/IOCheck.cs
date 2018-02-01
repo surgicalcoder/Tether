@@ -24,6 +24,7 @@ namespace Tether.CoreChecks
 
         public IOCheck()
         {    
+            drivesToCheck = new List<Drive>();
             perfCategory = new PerformanceCounterCategory(PhsicalDiskCategoryName);
 
             searcher = new ManagementObjectSearcher("root\\cimv2", "SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk");
@@ -34,7 +35,8 @@ namespace Tether.CoreChecks
             {
                 var drive = new Drive();
 
-                drive.DriveName = GetDriveNameForMountPoint(instance);
+                drive.DriveName = instance;
+                //drive.DriveName = GetDriveNameForMountPoint(instance);
 
                 drive.InstanceName = instance;
                 drive.Metrics = new List<DriveMetric>

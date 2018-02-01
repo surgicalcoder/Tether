@@ -167,7 +167,7 @@
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(TargetDir)plugins" mkdir "$(TargetDir)plugins"
 
-copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
+REM copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
