@@ -8,7 +8,7 @@ using Tether.Plugins;
 
 namespace Tether.SamplePlugin
 {
-    public class ASPNet : ICheck
+    public class ASPNet : IPluginCheck
     {
         public string Key => "ASPNET";
 
@@ -22,6 +22,11 @@ namespace Tether.SamplePlugin
                 values.Add(counter.CounterName, counter.NextValue());
             }
             return values;
+        }
+
+        public List<Metric> GetMetrics()
+        {
+            throw new NotImplementedException();
         }
     }
 }

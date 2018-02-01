@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.Plugins", "Tether.Pl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.CoreSlices", "Tether.CoreSlices\Tether.CoreSlices.csproj", "{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tether.SamplePlugin", "Tether.SamplePlugin\Tether.SamplePlugin.csproj", "{6610CD47-269B-49F9-A829-9F2F473588D0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6610CD47-269B-49F9-A829-9F2F473588D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6610CD47-269B-49F9-A829-9F2F473588D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6610CD47-269B-49F9-A829-9F2F473588D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6610CD47-269B-49F9-A829-9F2F473588D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

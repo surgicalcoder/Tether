@@ -271,7 +271,7 @@ namespace Tether
                 longRunningResults.RemoveAll(f => f.Name == longRunningCheck.Key);
                 longRunningResults.Add(ee);
 
-                var result = longRunningCheck.Value.DoCheck();
+                var result = longRunningCheck.Value.GetMetrics();
 
                 ee.IsCurrentlyRunning = false;
                 ee.Result = result;
@@ -282,7 +282,7 @@ namespace Tether
             thread.Start();
         }
 
-        public dynamic PerformCheck(string checkName)
+        public List<Metric> PerformCheck(string checkName)
         {
             if (string.IsNullOrWhiteSpace(checkName))
             {
@@ -299,7 +299,7 @@ namespace Tether
                 }
             }
 
-            return check.DoCheck() as dynamic;
+            return check.GetMetrics();
         }
 
         public List<string> LoadSlices(string path)
@@ -336,7 +336,7 @@ namespace Tether
                 {
                     if (Activator.CreateInstance(longRunningCheck) is ILongRunningPluginCheck runningCheck)
                     {
-                        LongChecks.Add(runningCheck.Key, runningCheck);
+                        LongChecks.Add(longRunningCheck.FullName, runningCheck);
                     }
                 }
             }
@@ -349,7 +349,7 @@ namespace Tether
                 {
                     if (Activator.CreateInstance(type) is IPluginCheck check)
                     {
-                        CheckTypes.Add(check.Key, check);
+                        CheckTypes.Add(type.FullName, check);
                     }
                 }
 
