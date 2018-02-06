@@ -2,7 +2,7 @@
 
 namespace Tether.Plugins
 {
-    public interface IPluginCheck
+    public interface IMetricProvider
     {
         List<Metric> GetMetrics();
     }

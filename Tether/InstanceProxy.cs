@@ -24,7 +24,7 @@ namespace Tether
     
 
 
-        private Dictionary<string, IPluginCheck> CheckTypes;
+        private Dictionary<string, IMetricProvider> CheckTypes;
         private Dictionary<string, ILongRunningPluginCheck> LongChecks;
         private List<LongRunningResult> longRunningResults;
         private Dictionary<string, Type> slices;
@@ -32,7 +32,7 @@ namespace Tether
 
         public InstanceProxy()
         {
-            CheckTypes = new Dictionary<string, IPluginCheck>();
+            CheckTypes = new Dictionary<string, IMetricProvider>();
             slices = new Dictionary<string, Type>();
             PluginSettings = new Dictionary<string, dynamic>();
             LongChecks = new Dictionary<string, ILongRunningPluginCheck>();
@@ -341,13 +341,13 @@ namespace Tether
                 }
             }
 
-            var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(IPluginCheck).FullName)  ).ToList();
+            var enumerable = asm.GetTypes().Where(r=> r.GetInterfaces().Any(e=>e.FullName == typeof(IMetricProvider).FullName)  ).ToList();
 
             if (enumerable.Any())
             {
                 foreach (var type in enumerable)
                 {
-                    if (Activator.CreateInstance(type) is IPluginCheck check)
+                    if (Activator.CreateInstance(type) is IMetricProvider check)
                     {
                         CheckTypes.Add(type.FullName, check);
                     }

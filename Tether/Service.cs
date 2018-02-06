@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using Tether.Config;
 using Tether.CoreChecks;
+using Tether.Metrics;
 using Tether.Plugins;
 using Topshelf;
 using Utilities.DataTypes.ExtensionMethods;
@@ -32,7 +33,7 @@ namespace Tether
 	    private List<string> sliceCheckList;
 	    
 		private List<ICheck> sdCoreChecks;
-	    private List<IPluginCheck> sdCorePlugins;
+	    private List<IMetricProvider> sdCoreMetrics;
 
         private AppDomain pluginAppDomain;
 	    private InstanceProxy instanceProxy = null;
@@ -40,7 +41,7 @@ namespace Tether
 
         public Service()
 		{
-		    this.sdCorePlugins = new List<IPluginCheck>();
+		    this.sdCoreMetrics = new List<IMetricProvider>();
 		    logger.Trace("start ctor");
 			timer = new Timer(ConfigurationSingleton.Instance.Config.CheckInterval*1000);
 			timer.Elapsed += Timer_Elapsed;
@@ -63,25 +64,24 @@ namespace Tether
 		{
 			logger.Debug("Creating Base Checks...");
 
-			sdCoreChecks.Add(CreateCheck<NetworkTrafficCheck>());
 			sdCoreChecks.Add(CreateCheck<DriveInfoBasedDiskUsageCheck>());
 			sdCoreChecks.Add(CreateCheck<ProcessorCheck>());
 			sdCoreChecks.Add(CreateCheck<ProcessCheck>());
+			sdCoreChecks.Add(CreateCheck<IOCheck>());
 			sdCoreChecks.Add(CreateCheck<PhysicalMemoryFreeCheck>());
 			sdCoreChecks.Add(CreateCheck<PhysicalMemoryUsedCheck>());
 			sdCoreChecks.Add(CreateCheck<PhysicalMemoryCachedCheck>());
 			sdCoreChecks.Add(CreateCheck<SwapMemoryFreeCheck>());
 			sdCoreChecks.Add(CreateCheck<SwapMemoryUsedCheck>());
-			//sdCoreChecks.Add(CreateCheck<IOCheck>());
 			sdCoreChecks.Add(CreateCheck<IISCheck>());
 
-		    sdCorePlugins.Add(CreatePluginCheck<IOCheck>());
-
+		    sdCoreMetrics.Add(CreatePluginCheck<DiskUsageMetricProvider>());
+		    sdCoreMetrics.Add(CreatePluginCheck<NetworkTrafficMetricProvider>());
 
             logger.Debug("Base Check Creation Complete...");
 		}
 
-	    private IPluginCheck CreatePluginCheck<T>() where T : IPluginCheck, new()
+	    private IMetricProvider CreatePluginCheck<T>() where T : IMetricProvider, new()
 	    {
 	        logger.Trace("Creating " + typeof(T).Name);
 
@@ -304,14 +304,9 @@ namespace Tether
 
 				});
 
-
-
 		    var pluginCollection = new List<Metric>();
-
-
-
-
-            Parallel.ForEach(sdCorePlugins, check =>
+            logger.Info("Polling Core Metrics");
+            Parallel.ForEach(sdCoreMetrics, check =>
 		    {
                 logger.Trace($"{check.GetType(): start}");
 
@@ -336,10 +331,10 @@ namespace Tether
                 logger.Trace($"{check.GetType(): end}");
 		    });
 
+		    logger.Info("Polling long checks");
+
             try
 		    {
-		        logger.Info("Polling long checks");
-
 		        var longRunningChecks = instanceProxy.GetLongRunningChecks();
 
 		        if (longRunningChecks.Any())
@@ -418,9 +413,10 @@ namespace Tether
       //                  MainAppDomainCPUUsage = AppDomain.CurrentDomain.MonitoringTotalProcessorTime.ToString("g")
 		    //        });
 		    //}
-            
 
-			results.Add("plugins", pluginCollection);
+		    var serializeObject = JsonConvert.SerializeObject(pluginCollection, Formatting.None, new MetricJsonConverter());
+
+		    results.Add("metrics", JsonConvert.DeserializeObject(serializeObject));
 
 			try
 			{

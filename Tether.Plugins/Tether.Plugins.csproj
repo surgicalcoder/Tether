@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="Metric.cs" />
     <Compile Include="ILongRunningPluginCheck.cs" />
-    <Compile Include="IPluginCheck.cs" />
+    <Compile Include="IMetricProvider.cs" />
     <Compile Include="IRequireConfigurationData.cs" />
     <Compile Include="MetricType.cs" />
     <Compile Include="PerformanceCounterGroupingAttribute.cs" />

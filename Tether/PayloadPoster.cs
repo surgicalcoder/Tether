@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using Tether.Config;
+using Tether.Plugins;
 
 namespace Tether
 {
@@ -161,5 +164,44 @@ namespace Tether
         private IDictionary<string, object> _results;
     }
     
+    class MetricJsonConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value == null || value.GetType() != typeof(Metric))
+            {
+                return;
+            }
 
+            var item = (Metric) value;
+
+            var array = new JArray
+            {
+                item.Name, 
+                item.Timestamp.GetUnixTimestamp(),
+                item.Value,
+                new JObject()
+                {
+                    {"hostname", item.Hostname},
+                    {"type", item.Type.ToString().ToLowerInvariant()},
+                    {"tags", JToken.FromObject(item.Tags.Select(f=>$"{f.Key}:{f.Value}"))}
+                }
+            };
+
+            array.WriteTo(writer);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => null;
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Metric);
+        }
+    }
+
+    static class Extensions
+    {
+        public static int GetUnixTimestamp(this DateTime dt) => (int)(dt.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        // (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds
+    }
 }

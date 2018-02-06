@@ -2,7 +2,7 @@
 {
     public enum MetricType
     {
-        Gague,
+        Gauge,
         Increment,
         Decrement,
         Histogram,

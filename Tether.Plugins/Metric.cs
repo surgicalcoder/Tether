@@ -10,6 +10,7 @@ namespace Tether.Plugins
     {
         public Metric()
         {
+            Timestamp = DateTime.UtcNow;
         }
 
         public Metric(string name, DateTime timestamp, float value, MetricType type, string hostname,
@@ -23,13 +24,14 @@ namespace Tether.Plugins
             Tags = tags ?? throw new ArgumentNullException(nameof(tags));
         }
 
-        public Metric(string name, float value, MetricType type = MetricType.Gague, Dictionary<string, string> tags=null)
+        public Metric(string name, float value, MetricType type = MetricType.Gauge, Dictionary<string, string> tags=null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Value = value;
             Type = type;
             Tags = tags ?? throw new ArgumentNullException(nameof(tags));
             Hostname = Environment.MachineName;
+            Timestamp = DateTime.UtcNow;
         }
 
         public override string ToString()
