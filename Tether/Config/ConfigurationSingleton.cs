@@ -37,6 +37,6 @@ namespace Tether.Config
         }
 
         public List<AssemblyNameDefinition> PluginAssemblies { get; set; }
-
+        public AppDomain PluginAppDomain;
     }
 }

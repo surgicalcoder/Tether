@@ -35,7 +35,7 @@ namespace Tether
 		private List<ICheck> sdCoreChecks;
 	    private List<IMetricProvider> sdCoreMetrics;
 
-        private AppDomain pluginAppDomain;
+        
 	    private InstanceProxy instanceProxy = null;
 	    private Thread pluginDetectionThread;
 
@@ -77,6 +77,7 @@ namespace Tether
 
 		    sdCoreMetrics.Add(CreatePluginCheck<DiskUsageMetricProvider>());
 		    sdCoreMetrics.Add(CreatePluginCheck<NetworkTrafficMetricProvider>());
+		    sdCoreMetrics.Add(CreatePluginCheck<TetherMetricProvider>());
 
             logger.Debug("Base Check Creation Complete...");
 		}
@@ -147,11 +148,11 @@ namespace Tether
 		        return;
 		    }
 
-		    if (pluginAppDomain != null)
+		    if (ConfigurationSingleton.Instance.PluginAppDomain != null)
 		    {
-		        AppDomain.Unload(pluginAppDomain);
+		        AppDomain.Unload(ConfigurationSingleton.Instance.PluginAppDomain);
 
-		        pluginAppDomain = null;
+		        ConfigurationSingleton.Instance.PluginAppDomain = null;
 		        instanceProxy = null;
 		    }
 
@@ -179,14 +180,14 @@ namespace Tether
 		        });
 
 
-            pluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
+		    ConfigurationSingleton.Instance.PluginAppDomain = AppDomain.CreateDomain("TetherPlugins", null, new AppDomainSetup
 		    {
 		        ApplicationBase = workingPluginFolder,
 		        PrivateBinPath = workingPluginFolder,
 		        PrivateBinPathProbe = workingPluginFolder
             });
 
-		    instanceProxy = pluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
+		    instanceProxy = ConfigurationSingleton.Instance.PluginAppDomain.CreateInstanceFromAndUnwrap(typeof(Service).Assembly.Location, typeof(InstanceProxy).FullName) as InstanceProxy;
 
 		    if (instanceProxy == null)
 		    {
@@ -267,7 +268,7 @@ namespace Tether
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
 			var results = new Dictionary<string, object>();
-			List<dynamic> objList = new List<dynamic>();
+			var objList = new List<dynamic>();
 
 			if (systemStatsSent)
 			{
@@ -402,18 +403,6 @@ namespace Tether
 
 			//	});
 
-		    //if (ConfigurationSingleton.Instance.Config.SubmitTetherData)
-		    //{
-		    //    pluginCollection.Add("__tether",
-		    //        new
-		    //        {
-		    //            PluginAppDomainMemoryUsage = pluginAppDomain.MonitoringTotalAllocatedMemorySize,
-      //                  PluginAppDomainCPUUsage = pluginAppDomain.MonitoringTotalProcessorTime.ToString("g"),
-		    //            MainAppDomainMemoryUsage = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize,
-      //                  MainAppDomainCPUUsage = AppDomain.CurrentDomain.MonitoringTotalProcessorTime.ToString("g")
-		    //        });
-		    //}
-
 		    var serializeObject = JsonConvert.SerializeObject(pluginCollection, Formatting.None, new MetricJsonConverter());
 
 		    results.Add("metrics", JsonConvert.DeserializeObject(serializeObject));
@@ -433,9 +422,9 @@ namespace Tether
 
 	    private void CheckIfNeedToReloadPlugins()
 	    {
-	        if (pluginAppDomain.MonitoringTotalAllocatedMemorySize > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
+	        if (ConfigurationSingleton.Instance.PluginAppDomain.MonitoringTotalAllocatedMemorySize > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
 	        {
-                logger.Warn($"Memory usage of Plugin AppDomain has exceeded ${pluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
+                logger.Warn($"Memory usage of Plugin AppDomain has exceeded ${ConfigurationSingleton.Instance.PluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
                 DetectPlugins();
 	            return;
 	        }
