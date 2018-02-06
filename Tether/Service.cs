@@ -64,7 +64,7 @@ namespace Tether
 		{
 			logger.Debug("Creating Base Checks...");
 
-			sdCoreChecks.Add(CreateCheck<DriveInfoBasedDiskUsageCheck>());
+			//sdCoreChecks.Add(CreateCheck<DriveInfoBasedDiskUsageCheck>());
 			sdCoreChecks.Add(CreateCheck<ProcessorCheck>());
 			sdCoreChecks.Add(CreateCheck<ProcessCheck>());
 			sdCoreChecks.Add(CreateCheck<IOCheck>());
