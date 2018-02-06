@@ -29,7 +29,7 @@ namespace Tether
 
             foreach (var file in Directory.GetFiles(retransmitRootPath, "*.json", SearchOption.AllDirectories))
             {
-                var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file));
+                var values = File.ReadAllText(file);
 
                 var transmitValues = PayloadPoster.TransmitValues(values, bypassSave:true);
 

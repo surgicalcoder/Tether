@@ -30,7 +30,7 @@ namespace Tether
             _results.Add("os", "windows");
             _results.Add("agentKey", ConfigurationSingleton.Instance.Config.ServerDensityKey);
             _results.Add("collection_timestamp", (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
-
+            _results.Add("sdAgentVersion","2");
             try
             {
                 _results.Add("internalHostname", Environment.MachineName);
@@ -64,25 +64,25 @@ namespace Tether
         public void Post()
         {
             var payload = JsonConvert.SerializeObject(_results);
-            var hash = MD5Hash(payload);
+            //var hash = MD5Hash(payload);
 
-            var data = new Dictionary<string, string> {{"payload", payload}, {"hash", hash}};
+            //var data = new Dictionary<string, string> {{"payload", payload}, {"hash", hash}};
 
             if (logger.IsTraceEnabled)
             {
-                logger.Trace(data);
+                logger.Trace(payload);
             }
 
-            TransmitValues(data);
+            TransmitValues(payload);
         }
 
-        public static bool TransmitValues(Dictionary<string, string> data, bool bypassSave = false)
+        public static bool TransmitValues(string data, bool bypassSave = false)
         {
             bool successful = false;
             using (var client = new WebClient())
             {
-                var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
-
+                //var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
+                var url = ConfigurationSingleton.Instance.Config.ServerDensityUrl;
                 logger.Info($"Posting to {url}");
 
                 if (WebRequest.DefaultWebProxy != null)
@@ -92,8 +92,8 @@ namespace Tether
 
                 try
                 {
-
-                    var response = client.UploadString(url, "POST", JsonConvert.SerializeObject(data));
+                    client.Headers.Add("Content-MD5", MD5Hash(data));
+                    var response = client.UploadString(url, "POST", data);
 
                     var responseText = response;
 
@@ -125,7 +125,7 @@ namespace Tether
             return successful;
         }
 
-        private static void SavePayloadForRetransmission(Dictionary<string, string> data)
+        private static void SavePayloadForRetransmission(string data)
         {
             var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 

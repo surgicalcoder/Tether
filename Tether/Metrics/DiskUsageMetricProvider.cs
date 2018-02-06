@@ -30,11 +30,11 @@ namespace Tether.Metrics
 
                         var mountedOn = mountedOnValue == null ? string.Empty : (string)mountedOnValue;
 
-                        int percentUsed = 0;
+                        float percentUsed = 0;
 
                         if (totalSize > 0)
                         {
-                            percentUsed = (int)(((float)used / (float)totalSize) * 100);
+                            percentUsed = used / (float)totalSize;
                         }
 
                         values.Add(new Metric("system.disk.total", totalSize/1024, tags:new Dictionary<string, string>{{"device_name", mountedOn}}));

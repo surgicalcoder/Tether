@@ -36,7 +36,7 @@ namespace Tether.Metrics
                 values.Add(new Metric("system.net.bytes_sent", tx, tags: new Dictionary<string, string>{{"device_name",nic.Name}}));
                 values.Add(new Metric("system.net.bytes_rcvd", rx, tags: new Dictionary<string, string>{{"device_name",nic.Name}}));
 
-                delta.Add(nic.Name, new Tuple<long, long>(rx,tx));
+                delta.Add(nic.Name, new Tuple<long, long>(stats.BytesReceived,stats.BytesSent));
             }
 
             return values;
