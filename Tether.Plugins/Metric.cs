@@ -21,7 +21,7 @@ namespace Tether.Plugins
             Value = value;
             Type = type;
             Hostname = hostname ?? throw new ArgumentNullException(nameof(hostname));
-            Tags = tags ?? throw new ArgumentNullException(nameof(tags));
+            Tags = tags;
         }
 
         public Metric(string name, float value, MetricType type = MetricType.Gauge, Dictionary<string, string> tags=null)
@@ -29,7 +29,7 @@ namespace Tether.Plugins
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Value = value;
             Type = type;
-            Tags = tags ?? throw new ArgumentNullException(nameof(tags));
+            Tags = tags;
             Hostname = Environment.MachineName;
             Timestamp = DateTime.UtcNow;
         }

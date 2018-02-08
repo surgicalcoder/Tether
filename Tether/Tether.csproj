@@ -116,6 +116,7 @@
     <Compile Include="Checks\IISCheck.cs" />
     <Compile Include="Checks\IOCheck.cs" />
     <Compile Include="MetricJsonConverter.cs" />
+    <Compile Include="Metrics\CPUUtilisationMetricProvider.cs" />
     <Compile Include="Metrics\DiskUsageMetricProvider.cs" />
     <Compile Include="Metrics\IOMetricProvider.cs" />
     <Compile Include="Checks\NetworkTrafficCheck.cs" />

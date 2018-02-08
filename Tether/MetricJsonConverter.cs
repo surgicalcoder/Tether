@@ -17,17 +17,23 @@ namespace Tether
 
             var item = (Metric) value;
 
+            var content = new JObject()
+            {
+                {"hostname", item.Hostname},
+                {"type", item.Type.ToString().ToLowerInvariant()},
+            };
+
+            if (item.Tags != null && item.Tags.Any())
+            {
+                content.Add("tags",JToken.FromObject(item.Tags.Select(f=>$"{f.Key}:{f.Value}")));
+            }
+
             var array = new JArray
             {
                 item.Name, 
                 item.Timestamp.GetUnixTimestamp(),
                 item.Value,
-                new JObject()
-                {
-                    {"hostname", item.Hostname},
-                    {"type", item.Type.ToString().ToLowerInvariant()},
-                    {"tags", JToken.FromObject(item.Tags.Select(f=>$"{f.Key}:{f.Value}"))}
-                }
+                content
             };
 
             array.WriteTo(writer);

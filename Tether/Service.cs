@@ -78,6 +78,7 @@ namespace Tether
 		    sdCoreMetrics.Add(CreatePluginCheck<DiskUsageMetricProvider>());
 		    sdCoreMetrics.Add(CreatePluginCheck<NetworkTrafficMetricProvider>());
 		    sdCoreMetrics.Add(CreatePluginCheck<TetherMetricProvider>());
+		    sdCoreMetrics.Add(CreatePluginCheck<CPUUtilisationMetricProvider>());
 
             logger.Debug("Base Check Creation Complete...");
 		}
