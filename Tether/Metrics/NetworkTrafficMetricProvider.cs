@@ -33,6 +33,16 @@ namespace Tether.Metrics
                     delta.Remove(nic.Name);
                 }
 
+                if (rx < 0)
+                {
+                    rx = 0;
+                }
+
+                if (tx < 0)
+                {
+                    tx = 0;
+                }
+
                 values.Add(new Metric("system.net.bytes_sent", tx, tags: new Dictionary<string, string>{{"device_name",nic.Name}}));
                 values.Add(new Metric("system.net.bytes_rcvd", rx, tags: new Dictionary<string, string>{{"device_name",nic.Name}}));
 

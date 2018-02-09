@@ -20,7 +20,12 @@ namespace Tether.Metrics
                 counter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             }
            
-            return new List<Metric>{new Metric("serverdensity.cpu.util.pct", counter.NextValue())};
+            return new List<Metric>
+            {
+                new Metric("serverdensity.cpu.util.pct", counter.NextValue()),
+                new Metric("system.load.1", counter.NextValue()),
+
+            };
         }
     }
 }

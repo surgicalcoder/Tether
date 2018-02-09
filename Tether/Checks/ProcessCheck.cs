@@ -70,21 +70,22 @@ namespace Tether.CoreChecks
                         {
                             memoryPercentage = Decimal.Round((decimal)workingSet / totalMemory * 100, 2);
                         }
-
-                        results.Add(new object[]
-                        {
-                            fullUserName, // USER = user owning the process
-                            processId, // PID = process ID of the process
-                            cpuPercentage, // %CPU = It is the CPU time used divided by the time the process has been running.
-                            memoryPercentage, // %MEM = ratio of the process's resident set size to the physical memory on the machine
-                            0, // VSZ - Virtual Memory Usage of entire process in KB
-                            workingSet, //RSS = resident set size, the non-swapped physical memory that a task has used (in KiB)
-                            0, // TTY = controlling tty (terminal)
-                            "", // STAT = multi-character process state
-                            0, // START = starting time or date of the process
-                            0, // TIME = cumulative CPU time
-                            imageName,  // COMMAND = command with all its arguments
-                        });
+                        
+                        results.Add(new object[] { processId, imageName, fullUserName, cpuPercentage, memoryPercentage, workingSet });
+                        //results.Add(new object[]
+                        //{
+                        //    fullUserName, // USER = user owning the process
+                        //    processId, // PID = process ID of the process
+                        //    cpuPercentage, // %CPU = It is the CPU time used divided by the time the process has been running.
+                        //    memoryPercentage, // %MEM = ratio of the process's resident set size to the physical memory on the machine
+                        //    0, // VSZ - Virtual Memory Usage of entire process in KB
+                        //    workingSet, //RSS = resident set size, the non-swapped physical memory that a task has used (in KiB)
+                        //    0, // TTY = controlling tty (terminal)
+                        //    "", // STAT = multi-character process state
+                        //    0, // START = starting time or date of the process
+                        //    0, // TIME = cumulative CPU time
+                        //    imageName,  // COMMAND = command with all its arguments
+                        //});
 
                         //TODO : Replace with something!
                         // flag check
