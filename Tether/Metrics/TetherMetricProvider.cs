@@ -17,9 +17,12 @@ namespace Tether.Metrics
                 return null;
             }
 
+            var currentProcess = Process.GetCurrentProcess();
+
             var values = new List<Metric>
             {
-                new Metric("tether.process.memory", Process.GetCurrentProcess().PrivateMemorySize64)
+                new Metric("tether.process.memory", currentProcess.PrivateMemorySize64),
+                new Metric("tether.process.threads", currentProcess.Threads.Count)
             };
             return values;
         }
