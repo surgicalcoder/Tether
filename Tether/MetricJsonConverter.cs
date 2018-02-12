@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,10 +24,13 @@ namespace Tether
                 {"type", item.Type.ToString().ToLowerInvariant()},
             };
 
-            if (item.Tags != null && item.Tags.Any())
+
+            if (item.Tags == null || !item.Tags.Any())
             {
-                content.Add("tags",JToken.FromObject(item.Tags.Select(f=>$"{f.Key}:{f.Value}")));
+                item.Tags = new Dictionary<string, string>{{"device_name", Environment.MachineName}};
             }
+            
+            content.Add("tags", JToken.FromObject(item.Tags.Select(f => $"{f.Key}:{f.Value}")));
 
             var array = new JArray
             {
