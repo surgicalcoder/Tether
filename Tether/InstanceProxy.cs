@@ -25,7 +25,7 @@ namespace Tether
 
 
         private Dictionary<string, IMetricProvider> CheckTypes;
-        private Dictionary<string, ILongRunningPluginCheck> LongChecks;
+        private Dictionary<string, ILongRunningMetricProvider> LongChecks;
         private List<LongRunningResult> longRunningResults;
         private Dictionary<string, Type> slices;
         public Dictionary<string, dynamic> PluginSettings { get; set; }
@@ -35,7 +35,7 @@ namespace Tether
             CheckTypes = new Dictionary<string, IMetricProvider>();
             slices = new Dictionary<string, Type>();
             PluginSettings = new Dictionary<string, dynamic>();
-            LongChecks = new Dictionary<string, ILongRunningPluginCheck>();
+            LongChecks = new Dictionary<string, ILongRunningMetricProvider>();
             longRunningResults = new List<LongRunningResult>();
         }
 
@@ -76,7 +76,7 @@ namespace Tether
             return results;
         }
 
-        private void RunLongRunningCheck(KeyValuePair<string, ILongRunningPluginCheck> longRunningCheck)
+        private void RunLongRunningCheck(KeyValuePair<string, ILongRunningMetricProvider> longRunningCheck)
         {
             var ee = longRunningResults.FirstOrDefault(f => f.Name == longRunningCheck.Key) ?? new LongRunningResult();
 
@@ -130,13 +130,13 @@ namespace Tether
         {
             var asm = Assembly.LoadFrom(path);
 
-            var longRunningChecks = asm.GetTypes().Where(r => r.GetInterfaces().Any(e => e.FullName == typeof(ILongRunningPluginCheck).FullName)).ToList();
+            var longRunningChecks = asm.GetTypes().Where(r => r.GetInterfaces().Any(e => e.FullName == typeof(ILongRunningMetricProvider).FullName)).ToList();
 
             if (longRunningChecks.Any())
             {
                 foreach (var longRunningCheck in longRunningChecks)
                 {
-                    if (Activator.CreateInstance(longRunningCheck) is ILongRunningPluginCheck runningCheck)
+                    if (Activator.CreateInstance(longRunningCheck) is ILongRunningMetricProvider runningCheck)
                     {
                         LongChecks.Add(longRunningCheck.FullName, runningCheck);
                     }

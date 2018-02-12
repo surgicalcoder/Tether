@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Tether.Plugins
 {
-    public interface ILongRunningPluginCheck
+    public interface ILongRunningMetricProvider
     {
         List<Metric> GetMetrics();
 

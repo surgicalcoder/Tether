@@ -139,6 +139,19 @@ namespace Tether
 
             logger.Trace("Finding plugins");
 
+		    if (File.Exists(Path.Combine(pluginPath, "Tether.Plugins.dll")))
+		    {
+                File.Delete(Path.Combine(pluginPath, "Tether.Plugins.dll"));
+		    }
+
+		    if (File.Exists(Path.Combine(pluginPath, "Tether.Plugins.pdb")))
+		    {
+                File.Delete(Path.Combine(pluginPath, "Tether.Plugins.pdb"));
+		    }
+
+            File.Copy(Path.Combine(basePath, "Tether.Plugins.dll"),Path.Combine(pluginPath, "Tether.Plugins.dll"));
+            File.Copy(Path.Combine(basePath, "Tether.Plugins.pdb"),Path.Combine(pluginPath, "Tether.Plugins.pdb"));
+
             var di = new DirectoryInfo(pluginPath);
             var workingFiles = new DirectoryInfo(workingPluginFolder);
 			var fileInfo = di.GetFiles("*.dll");
@@ -202,7 +215,7 @@ namespace Tether
 				{
                     var def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningPluginCheck).FullName))).ToList();
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningMetricProvider).FullName))).ToList();
                     
                     var isPlugin = false;
 
@@ -344,6 +357,7 @@ namespace Tether
 		            foreach (var lrc in longRunningChecks)
 		            {
 		                var list = JsonConvert.DeserializeObject<List<Metric>>(lrc.Value);
+		                list.ForEach(f => f.Timestamp = DateTime.UtcNow);
 		                pluginCollection.Add(list);
 		            }
 
