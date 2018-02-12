@@ -213,18 +213,18 @@ namespace Tether
 				        isPlugin = true;
                     }
 
-				    var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
+				    //var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
 
-				    if (typeDefinitions.Any())
-				    {
-				        logger.Trace($"Found slice {info.FullName}");
+				    //if (typeDefinitions.Any())
+				    //{
+				    //    logger.Trace($"Found slice {info.FullName}");
 
-				        var loadSlices = instanceProxy.LoadSlices(info.FullName);
+				    //    var loadSlices = instanceProxy.LoadSlices(info.FullName);
 
-				        sliceCheckList.Add(loadSlices);
+				    //    sliceCheckList.Add(loadSlices);
 
-				        isPlugin = true;
-                    }
+				    //    isPlugin = true;
+        //            }
 
                     
                     if (isPlugin)
@@ -355,8 +355,7 @@ namespace Tether
 		    }
 
 		    
-			logger.Info("Polling Slices");
-
+			
 			Parallel.ForEach(
 				ICheckTypeList,
 				check =>
@@ -383,26 +382,6 @@ namespace Tether
 
 				});
 
-			logger.Info("Generating SD compatible names for slices.");
-
-			//Parallel.ForEach(
-			//    sliceCheckList,
-			//	type =>
-			//	{
-			//		try
-			//		{
-			//		    var invokeres = instanceProxy.GetSlice(type);
-			//		    foreach (var invokere in invokeres)
-			//		    {
-			//		        pluginCollection.Add(invokere.Key, JsonConvert.DeserializeObject(invokere.Value));
-			//		    }
-   //                 }
-			//		catch (Exception exception)
-			//		{
-			//			logger.Error(exception, $"Error during slice {type}");
-			//		}
-
-			//	});
 
 		    var serializeObject = JsonConvert.SerializeObject(pluginCollection, Formatting.None, new MetricJsonConverter());
 
@@ -423,7 +402,7 @@ namespace Tether
 
 	    private void CheckIfNeedToReloadPlugins()
 	    {
-	        if (ConfigurationSingleton.Instance.PluginAppDomain.MonitoringTotalAllocatedMemorySize > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
+	        if (Process.GetCurrentProcess().PrivateMemorySize64 > ConfigurationSingleton.Instance.Config.PluginMemoryLimit)
 	        {
                 logger.Warn($"Memory usage of Plugin AppDomain has exceeded ${ConfigurationSingleton.Instance.PluginAppDomain.MonitoringTotalAllocatedMemorySize} bytes , reloading plugins");
                 DetectPlugins();
