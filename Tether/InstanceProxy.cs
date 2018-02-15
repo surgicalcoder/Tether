@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Management;
 using System.Reflection;
 using System.Threading;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Tether.Plugins;
 using Utilities.DataTypes.ExtensionMethods;
 
@@ -37,6 +40,12 @@ namespace Tether
             PluginSettings = new Dictionary<string, dynamic>();
             LongChecks = new Dictionary<string, ILongRunningMetricProvider>();
             longRunningResults = new List<LongRunningResult>();
+        }
+
+        public void AddSettings(string name, string values)
+        {
+            var value = JsonConvert.DeserializeObject<ExpandoObject>(values, new ExpandoObjectConverter()) as dynamic;
+            PluginSettings.Add(name, value);
         }
 
         public Dictionary<string, string> GetLongRunningChecks()
@@ -117,7 +126,7 @@ namespace Tether
 
             if (check is IRequireConfigurationData)
             {
-                if (PluginSettings[check.GetType().FullName] != null)
+                if ( PluginSettings.ContainsKey(check.GetType().FullName))
                 {
                     (check as IRequireConfigurationData).LoadConfigurationData(PluginSettings[check.GetType().FullName]);
                 }

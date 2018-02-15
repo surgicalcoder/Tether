@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -215,7 +216,7 @@ namespace Tether
 				{
                     var def = AssemblyDefinition.ReadAssembly(info.FullName);
 
-				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(ICheck).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningMetricProvider).FullName))).ToList();
+				    var it = def.MainModule.Types.Where(e => e.Interfaces.Any(r => (r.FullName == typeof(IMetricProvider).FullName)) ||  (e.Interfaces.Any(r => r.FullName == typeof(ILongRunningMetricProvider).FullName))).ToList();
                     
                     var isPlugin = false;
 
@@ -225,20 +226,6 @@ namespace Tether
 				        ICheckTypeList.Add(res);
 				        isPlugin = true;
                     }
-
-				    //var typeDefinitions = def.MainModule.Types.Where(f=> f.CustomAttributes.Any(a=>a.AttributeType.FullName == typeof(PerformanceCounterGroupingAttribute).FullName )  ).ToList();
-
-				    //if (typeDefinitions.Any())
-				    //{
-				    //    logger.Trace($"Found slice {info.FullName}");
-
-				    //    var loadSlices = instanceProxy.LoadSlices(info.FullName);
-
-				    //    sliceCheckList.Add(loadSlices);
-
-				    //    isPlugin = true;
-        //            }
-
                     
                     if (isPlugin)
                     {
@@ -253,13 +240,16 @@ namespace Tether
 				}
 			}
 
-            var checkNames = ICheckTypeList.Select(e => e.GetType().FullName).ToList();
+            var checkNames = ICheckTypeList.ToList();
 
             foreach (var jsonFiles in workingFiles.GetFiles("*.json"))
             {
-                if (checkNames.Contains(Path.GetFileNameWithoutExtension(jsonFiles.Name)))
+                var filename = Path.GetFileNameWithoutExtension(jsonFiles.Name);
+                if (checkNames.Contains(filename))
                 {
-                    instanceProxy.PluginSettings.Add(Path.GetFileNameWithoutExtension(jsonFiles.Name), JObject.Parse(File.ReadAllText(jsonFiles.FullName)) as dynamic);
+                    
+                    //instanceProxy.PluginSettings.Add(filename, value);
+                    instanceProxy.AddSettings(filename, File.ReadAllText(jsonFiles.FullName));
                 }
             }
 
@@ -274,7 +264,7 @@ namespace Tether
             watcher.Renamed += delegate { pluginChangeDetected = true; };
 		    watcher.EnableRaisingEvents = true;
 
-            logger.Trace("Plugins found!");
+            logger.Trace("Plugin Load Complete");
 		}
 	    FileSystemWatcher watcher;
         ExpandoObjectConverter eoConverter = new ExpandoObjectConverter();
@@ -335,7 +325,7 @@ namespace Tether
 		                return;
 		            }
 
-		            pluginCollection.Add(result);
+		            pluginCollection.AddRange(result);
 
 		        }
 		        catch (Exception ex)
@@ -348,7 +338,7 @@ namespace Tether
 
 		    logger.Info("Polling long checks");
 
-            try
+		    try
 		    {
 		        var longRunningChecks = instanceProxy.GetLongRunningChecks();
 
@@ -362,6 +352,11 @@ namespace Tether
 		            }
 
 		        }
+		    }
+		    catch (RemotingException remoting)
+		    {
+                logger.Warn("Remoting exception, will reload plugins", remoting);
+		        pluginChangeDetected = true;
 		    }
 		    catch (Exception exception)
 		    {

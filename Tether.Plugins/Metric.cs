@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tether.Plugins
 {
+    [Serializable]
     public class Metric
     {
         public Metric()
@@ -13,21 +14,21 @@ namespace Tether.Plugins
             Timestamp = DateTime.UtcNow;
         }
 
-        public Metric(string name, DateTime timestamp, float value, MetricType type, string hostname,
+        public Metric(string name, DateTime timestamp, float? value, MetricType type, string hostname,
             Dictionary<string, string> tags)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Timestamp = timestamp;
-            Value = value;
+            Value = value ?? 0;
             Type = type;
             Hostname = hostname ?? throw new ArgumentNullException(nameof(hostname));
             Tags = tags;
         }
 
-        public Metric(string name, float value, MetricType type = MetricType.Gauge, Dictionary<string, string> tags=null)
+        public Metric(string name, float? value, MetricType type = MetricType.Gauge, Dictionary<string, string> tags=null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Value = value;
+            Value = value ?? 0;
             Type = type;
             Tags = tags;
             Hostname = Environment.MachineName;
