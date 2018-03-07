@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using NLog;
+using Tether.Config;
 
 namespace Tether
 {
@@ -22,23 +24,22 @@ namespace Tether
         /// provided values.
         /// </summary>
         /// <param name="results">The payload dictionary.</param>
-        public PayloadPoster(IDictionary<string, object> results)
+        public PayloadPoster(Dictionary<string, object> results)
         {
             _results = results;
             _results.Add("os", "windows");
             _results.Add("agentKey", ConfigurationSingleton.Instance.Config.ServerDensityKey);
-
+            _results.Add("collection_timestamp", (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+            _results.Add("sdAgentVersion","2");
             try
             {
                 _results.Add("internalHostname", Environment.MachineName);
-            }
-            catch (InvalidOperationException)
-            {
-            }
+            } catch (InvalidOperationException) {}
 
             try
             {
                 var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
                 if (assemblyVersion.ToString() == "0.0.0.0")
                 {
                     _results.Add("agentVersion", "tether-x");
@@ -47,12 +48,10 @@ namespace Tether
                 {
                     _results.Add("agentVersion", "tether-" + Assembly.GetExecutingAssembly().GetName().Version);
                 }
-
-
             }
             catch (Exception e)
             {
-                logger.Warn("Error on setting assembly version", e);
+                logger.Warn(e, "Error on setting assembly version");
 
                 _results.Add("agentVersion", "tether-e");
             }
@@ -65,34 +64,83 @@ namespace Tether
         public void Post()
         {
             var payload = JsonConvert.SerializeObject(_results);
-            var hash = MD5Hash(payload);
+            //var hash = MD5Hash(payload);
 
-            // TODO: this is for quick testing; we'll need to add proxy 
-            //       settings, read the response, etc.
+            //var data = new Dictionary<string, string> {{"payload", payload}, {"hash", hash}};
+
+            if (logger.IsTraceEnabled)
+            {
+                logger.Trace(payload);
+            }
+
+            TransmitValues(payload);
+        }
+
+        public static bool TransmitValues(string data, bool bypassSave = false)
+        {
+            bool successful = false;
             using (var client = new WebClient())
             {
-                var data = new NameValueCollection();
-                data.Add("payload", payload);
-                logger.Trace(payload);
-                data.Add("hash", hash);
-                var url = string.Format("{0}{1}postback/", ConfigurationSingleton.Instance.Config.ServerDensityUrl, ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/");
-                logger.Info("Posting to {0}", url);
+                //var url = $"{ConfigurationSingleton.Instance.Config.ServerDensityUrl}{(ConfigurationSingleton.Instance.Config.ServerDensityUrl.EndsWith("/") ? "" : "/")}postback/";
+                var url = ConfigurationSingleton.Instance.Config.ServerDensityUrl;
+                logger.Info($"Posting to {url}");
 
-                if (HttpWebRequest.DefaultWebProxy != null)
+                if (WebRequest.DefaultWebProxy != null)
                 {
-                    client.Proxy = HttpWebRequest.DefaultWebProxy;
+                    client.Proxy = WebRequest.DefaultWebProxy;
                 }
 
-                byte[] response = client.UploadValues(url, "POST", data);
-                string responseText = Encoding.ASCII.GetString(response);
-
-                if (responseText != "OK" && responseText != "\"OK\"")
+                try
                 {
-                    logger.Error("URL {0} returned: {1}", url, responseText);
-                }
+                    client.Headers.Add("Content-MD5", MD5Hash(data));
+                    var response = client.UploadString(url, "POST", data);
 
-                logger.Trace(responseText);
+                    var responseText = response;
+
+                    if (responseText != "OK" && responseText != "\"OK\"")
+                    {
+                        logger.Error($"URL {url} returned: {responseText}");
+
+                        SavePayloadForRetransmission(data);
+                    }
+                    else
+                    {
+                        successful = true;
+                    }
+
+                    logger.Trace(responseText);
+                }
+                catch (Exception e)
+                {
+                    if (bypassSave)
+                    {
+                        return successful;
+                    }
+                    logger.Warn(e, "Error on TransmitValues");
+                    SavePayloadForRetransmission(data);
+                }
+                
             }
+
+            return successful;
+        }
+
+        private static void SavePayloadForRetransmission(string data)
+        {
+            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var retransmitRootPath = Path.Combine(basePath, "_retransmit");
+            var zeroPath = Path.Combine(retransmitRootPath, "0");
+
+            Directory.CreateDirectory(retransmitRootPath);
+            Directory.CreateDirectory(zeroPath);
+
+            for (int i = 0; i < ConfigurationSingleton.Instance.Config.RetriesCount; i++)
+            {
+                Directory.CreateDirectory(Path.Combine(retransmitRootPath, i.ToString()));
+            }
+
+            File.WriteAllText(Path.Combine(zeroPath, DateTime.Now.ToString("O").Replace("+", "-").Replace(":", "") + ".json"),  JsonConvert.SerializeObject(data));
         }
 
         private static string MD5Hash(string input)
@@ -111,5 +159,11 @@ namespace Tether
         }
 
         private IDictionary<string, object> _results;
+    }
+
+    static class Extensions
+    {
+        public static int GetUnixTimestamp(this DateTime dt) => (int)(dt.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        // (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds
     }
 }

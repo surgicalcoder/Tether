@@ -1,6 +1,12 @@
 {
     "ServerDensityUrl": "https://accountname.serverdensity.io",
     "ServerDensityKey": "[Machine Key goes in here!]",
+
     "CheckInterval": 60,
+    "ManifestCheckInterval": 300,
+
+    "RetriesCount": 5,
+    "RetriesResendInterval": 300,
+
     "PluginManifestLocation": ""
 }

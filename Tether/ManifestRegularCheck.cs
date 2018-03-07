@@ -6,12 +6,14 @@ using System.Linq;
 using System.Net;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using NLog;
 using Quartz;
 using SharpCompress.Archive;
 using SharpCompress.Archive.Zip;
 using SharpCompress.Common;
+using Tether.Config;
 
 namespace Tether
 {
@@ -26,32 +28,54 @@ namespace Tether
         {
             try
             {
-                var pluginPath = Path.Combine(basePath, "plugins");
-                var tempPluginPath = Path.Combine(pluginPath, "_temp");
-
-                string contents;
-                WebClient client = new WebClient();
-
                 if (String.IsNullOrWhiteSpace(ConfigurationSingleton.Instance.Config.PluginManifestLocation))
                 {
                     return;
                 }
 
-                if (ConfigurationSingleton.Instance.Config.PluginManifestLocation.StartsWith("http"))
+                var pluginPath = Path.Combine(basePath, "plugins");
+                //var tempPluginPath = Path.Combine(pluginPath, "_temp");
+
+                var contents = string.Empty;
+
+                var client = new WebClient();
+
+                Uri newUri;
+
+                if (Uri.TryCreate(ConfigurationSingleton.Instance.Config.PluginManifestLocation, UriKind.Absolute, out newUri))
                 {
-                    contents = client.DownloadString(ConfigurationSingleton.Instance.Config.PluginManifestLocation);
+                    if (newUri.Scheme == "http" || newUri.Scheme == "https")
+                    {
+                        contents = client.DownloadString(ConfigurationSingleton.Instance.Config.PluginManifestLocation);
+                    }
+                    else if (newUri.Scheme == "dns")
+                    {
+                        throw new NotImplementedException("DNS scheme is not implemented yet");
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Scheme ${newUri.Scheme} is not supported");
+                    }
                 }
                 else
                 {
-                    string localPath = ConfigurationSingleton.Instance.Config.PluginManifestLocation;
+                    var localPath = ConfigurationSingleton.Instance.Config.PluginManifestLocation;
+
                     if (localPath.StartsWith("~"))
                     {
                         localPath = Path.Combine(basePath, localPath.Substring(2));
                     }
-                    logger.Debug("Reading Plugin Manifest from " + localPath);
+
+                    logger.Debug($"Reading Plugin Manifest from {localPath}");
+
                     contents = File.ReadAllText(localPath);
                 }
 
+                if (string.IsNullOrWhiteSpace(contents))
+                {
+                    return;
+                }
+                
                 var manifest = JsonConvert.DeserializeObject<PluginManifest>(contents);
 
                 if (!manifest.Items.Any())
@@ -60,69 +84,53 @@ namespace Tether
                     return;
                 }
 
-                bool requiresServiceRestart = false;
-                
+                List<PluginManifestItem> itemsToUpdate = new List<PluginManifestItem>();
+
                 foreach (var manifestItem in manifest.Items.Where(f => new Regex(f.MachineFilter, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(Environment.MachineName)))
                 {
-                    var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(e => e.GetName().Name == manifestItem.PluginName);
+                    var assembly = ConfigurationSingleton.Instance.PluginAssemblies.FirstOrDefault(f => f.Name == manifestItem.PluginName);
 
                     if (assembly != null)
                     {
-                        if (assembly.GetName().Version.ToString() != manifestItem.PluginVersion)
+                        if (assembly.Version.ToString() == manifestItem.PluginVersion)
                         {
-                            logger.Debug(string.Format("Assembly: {2}, Current assembly version = {0}, expecting {1}", assembly.GetName().Version.ToString(), manifestItem.PluginVersion, assembly.FullName));
-
-                            var zipPath = Path.Combine(tempPluginPath, assembly.GetName().Name + ".zip");
-
-                            if (!Directory.Exists(tempPluginPath))
-                            {
-                                Directory.CreateDirectory(tempPluginPath);
-                            }
-
-                            client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
-
-                            Unzip(zipPath, tempPluginPath);
-
-                            File.Delete(zipPath);
-
-                            requiresServiceRestart = true;
+                            continue;
                         }
+
+                        logger.Debug($"Assembly: {assembly.FullName}, Current assembly version = {assembly.Version}, expecting {manifestItem.PluginVersion}");
+                        itemsToUpdate.Add(manifestItem);
                     }
                     else
                     {
-                        logger.Debug("Assembly not found: " + manifestItem.PluginName + ", downloading from " + manifestItem.PluginDownloadLocation);
-                        var zipPath = Path.Combine(tempPluginPath, manifestItem.PluginName + ".zip");
-                        if (!Directory.Exists(tempPluginPath))
-                        {
-                            Directory.CreateDirectory(tempPluginPath);
-                        }
-                        client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
-
-                        Unzip(zipPath, tempPluginPath);
-
-                        File.Delete(zipPath);
-
-                        requiresServiceRestart = true;
+                        logger.Debug($"Assembly not found: {manifestItem.PluginName}, downloading from {manifestItem.PluginDownloadLocation}");
+                        itemsToUpdate.Add(manifestItem);
                     }
                 }
 
-                if (requiresServiceRestart)
+                if (itemsToUpdate.Any())
                 {
-
-                    string strCmdText = "/C net stop ThreeOneThree.Tether & net start ThreeOneThree.Tether";
-                    ProcessStartInfo info = new ProcessStartInfo("CMD.exe", strCmdText);
-                    info.WorkingDirectory = pluginPath;
-
-                    logger.Fatal("!!! GOING DOWN FOR AN UPDATE TO PLUGINS !!!");
-
-                    Process.Start(info);
+                    logger.Debug("Waiting for cross-thread waithandle");
+                    itemsToUpdate.ForEach(item => DownloadAndExtract(pluginPath, client, item));
                 }
 
             }
             catch (Exception e)
             {
-                logger.Warn("Error while checking Manifests", e);
+                logger.Warn(e, "Error while checking Manifests");
             }
+        }
+
+        private void DownloadAndExtract(string pluginPath, WebClient client, PluginManifestItem manifestItem)
+        {
+            var zipPath = Path.Combine(pluginPath, manifestItem.PluginName + ".zip");
+
+            Directory.CreateDirectory(pluginPath);
+
+            client.DownloadFile(manifestItem.PluginDownloadLocation, zipPath);
+
+            Unzip(zipPath, pluginPath);
+
+            File.Delete(zipPath);
         }
 
 
@@ -138,10 +146,10 @@ namespace Tether
 
         private void ExtractZipFile(string filePath, string destination)
         {
-            logger.Info("Unzipping '{0}' to {1}", filePath, destination);
+            logger.Info($"Unzipping '{filePath}' to {destination}");
+
             using (var archive = ZipArchive.Open(new FileInfo(filePath)))
             {
-                
                 archive.WriteToDirectory(destination, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
             }
         }

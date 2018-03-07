@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common.Logging, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.3.1.0\lib\net40\Common.Logging.dll</HintPath>
@@ -41,6 +44,18 @@
     <Reference Include="Common.Logging.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.Core.3.1.0\lib\net40\Common.Logging.Core.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -67,6 +82,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="TaskRemoting, Version=0.1.0.32935, Culture=neutral, PublicKeyToken=3778033b7ff7d17c, processorArchitecture=MSIL">
+      <HintPath>..\packages\TaskRemoting.0.1.1\lib\TaskRemoting.dll</HintPath>
+    </Reference>
     <Reference Include="Topshelf, Version=3.2.150.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <HintPath>..\packages\Topshelf.3.2.0\lib\net40-full\Topshelf.dll</HintPath>
       <Private>True</Private>
@@ -93,19 +111,41 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="ConfigurationSingleton.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="Checks\IISCheck.cs" />
+    <Compile Include="Checks\IOCheck.cs" />
+    <Compile Include="MetricJsonConverter.cs" />
+    <Compile Include="Metrics\CPUUtilisationMetricProvider.cs" />
+    <Compile Include="Metrics\DiskUsageMetricProvider.cs" />
+    <Compile Include="Metrics\IOMetricProvider.cs" />
+    <Compile Include="Checks\PerformanceCounterBasedCheck.cs" />
+    <Compile Include="Checks\PerformanceCounterBasedProcessCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryCachedCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryFreeCheck.cs" />
+    <Compile Include="Checks\PhysicalMemoryUsedCheck.cs" />
+    <Compile Include="Checks\ProcessCheck.cs" />
+    <Compile Include="Checks\ProcessorCheck.cs" />
+    <Compile Include="Checks\SQLServerCheck.cs" />
+    <Compile Include="Checks\SwapMemoryFreeCheck.cs" />
+    <Compile Include="Checks\SwapMemoryUsedCheck.cs" />
+    <Compile Include="Checks\SystemStatsCheck.cs" />
+    <Compile Include="Config\Configuration.cs" />
+    <Compile Include="Config\ConfigurationSingleton.cs" />
+    <Compile Include="ICheck.cs" />
+    <Compile Include="InstanceProxy.cs" />
     <Compile Include="ManifestRegularCheck.cs" />
+    <Compile Include="Metrics\NetworkTrafficMetricProvider.cs" />
+    <Compile Include="Metrics\TetherMetricProvider.cs" />
     <Compile Include="PayloadPoster.cs" />
-    <Compile Include="PluginManifest.cs" />
-    <Compile Include="PluginManifestItem.cs" />
+    <Compile Include="Config\PluginManifest.cs" />
+    <Compile Include="Config\PluginManifestItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResenderJob.cs" />
     <Compile Include="Service.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="app.manifest" />
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -116,14 +156,6 @@
     <None Include="PluginManifest.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tether.CoreChecks\Tether.CoreChecks.csproj">
-      <Project>{EF4EBD4E-8F8D-44CC-A26B-6A784D968816}</Project>
-      <Name>Tether.CoreChecks</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Tether.CoreSlices\Tether.CoreSlices.csproj">
-      <Project>{2E4D1FDC-AE7D-4019-BCAE-92769F62F178}</Project>
-      <Name>Tether.CoreSlices</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Tether.Plugins\Tether.Plugins.csproj">
       <Project>{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}</Project>
       <Name>Tether.Plugins</Name>
@@ -133,7 +165,7 @@
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(TargetDir)plugins" mkdir "$(TargetDir)plugins"
 
-copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
+REM copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

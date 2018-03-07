@@ -41,13 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICheck.cs" />
+    <Compile Include="Metric.cs" />
+    <Compile Include="ILongRunningMetricProvider.cs" />
+    <Compile Include="IMetricProvider.cs" />
     <Compile Include="IRequireConfigurationData.cs" />
-    <Compile Include="PerformanceCounterGroupingAttribute.cs" />
-    <Compile Include="PerformanceCounterValueAttribute.cs" />
-    <Compile Include="PerformanceCounterValueExcludeAttribute.cs" />
+    <Compile Include="MetricType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SelectorEnum.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

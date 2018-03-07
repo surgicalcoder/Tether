@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Converters;
 using NLog;
 using Quartz;
 using Topshelf;
@@ -14,7 +16,8 @@ namespace Tether
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private static string basePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        private static string basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private static string pluginPath = Path.Combine(basePath, "plugins");
 
 
         static void Main(string[] args)
@@ -23,10 +26,12 @@ namespace Tether
             {
                 logger.Trace("Performing Host Init");
 
-                var tempPath = Path.Combine(basePath, "plugins", "_temp");
+
+                AppDomain.MonitoringIsEnabled = true;
+
+                var tempPath = Path.Combine(pluginPath, "_temp");
                 if (Directory.Exists(tempPath))
                 {
-
                     if (Directory.GetFiles(tempPath).Any())
                     {
                         foreach (var file in Directory.GetFiles(tempPath))
@@ -34,8 +39,13 @@ namespace Tether
                             File.Move(file, Path.Combine(basePath, "plugins", Path.GetFileName(file) ) );
                         }
                     }
-
                     Directory.Delete(tempPath, true);
+                }
+
+                if (!File.Exists(Path.Combine(pluginPath, "Tether.Plugins.dll")))
+                {
+                    File.Copy(Path.Combine(basePath, "Tether.Plugins.dll"), Path.Combine(pluginPath, "Tether.Plugins.dll"));
+                    File.Copy(Path.Combine(basePath, "Tether.Plugins.pdb"), Path.Combine(pluginPath, "Tether.Plugins.pdb"));
                 }
 
                 Host host = HostFactory.New(x =>
@@ -47,15 +57,30 @@ namespace Tether
                         service.WhenStarted((a, control) => a.Start(control));
                         service.WhenStopped((a, control) => a.Stop(control));
 
-                        service.ScheduleQuartzJob(b => b.WithJob(() => JobBuilder.Create<ManifestRegularCheck>().Build()).AddTrigger(() => TriggerBuilder.Create().WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow().WithIntervalInMinutes(5).RepeatForever()).Build()));
+                        service.ScheduleQuartzJob(b => b.WithJob(() =>
+                                JobBuilder.Create<ManifestRegularCheck>().Build())
+                            .AddTrigger(() => TriggerBuilder.Create()
+                                .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
+                                    .WithIntervalInSeconds(Config.ConfigurationSingleton.Instance.Config.ManifestCheckInterval)
+                                    .RepeatForever())
+                                .Build()));
+
+                        if (!Config.ConfigurationSingleton.Instance.Config.DisableResending)
+                        {
+                            service.ScheduleQuartzJob(b => b.WithJob(() => JobBuilder.Create<ResenderJob>().Build())
+                            .AddTrigger(() => TriggerBuilder.Create()
+                                .WithSimpleSchedule(builder => builder.WithMisfireHandlingInstructionFireNow()
+                                    .WithIntervalInSeconds(Config.ConfigurationSingleton.Instance.Config.RetriesResendInterval)
+                                    .RepeatForever())
+                                .Build()));
+                        }
+
                     });
                     x.RunAsLocalSystem();
                     x.StartAutomatically();
-                    x.SetDescription("ThreeOneThree.Tether");
-                    x.SetDisplayName("ThreeOneThree.Tether");
-                    x.SetServiceName("ThreeOneThree.Tether");
-
-                    
+                    x.SetDescription("Tether");
+                    x.SetDisplayName("Tether");
+                    x.SetServiceName("Tether");
 
                     x.EnableServiceRecovery(
                         r =>
@@ -68,7 +93,7 @@ namespace Tether
             }
             catch (Exception ex)
             {
-                logger.FatalException("Problem when trying to run host", ex);
+                logger.Fatal(ex, "Problem when trying to run host");
             }
 
         }

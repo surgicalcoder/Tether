@@ -197,3 +197,5 @@ FakesAssemblies/
 
 # Tab Studio
 *.tss
+
+.vscode
