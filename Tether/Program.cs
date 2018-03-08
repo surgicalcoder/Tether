@@ -44,6 +44,7 @@ namespace Tether
 
                 if (!File.Exists(Path.Combine(pluginPath, "Tether.Plugins.dll")))
                 {
+                    Directory.CreateDirectory(Path.Combine(pluginPath));
                     File.Copy(Path.Combine(basePath, "Tether.Plugins.dll"), Path.Combine(pluginPath, "Tether.Plugins.dll"));
                     File.Copy(Path.Combine(basePath, "Tether.Plugins.pdb"), Path.Combine(pluginPath, "Tether.Plugins.pdb"));
                 }
