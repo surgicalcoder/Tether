@@ -34,8 +34,8 @@ Copy these to your server or servers, put into a directory, then edit settings:
 
 Edit your settings.json, and you will need to change at least the following:
 
-    "ServerDensityUrl": "https://accountname.serverdensity.io",
-    "ServerDensityKey": "[Machine Key goes in here!]",
+    "ServerDensityUrl": "https://{account}.agent.serverdensity.io/intake/?agent_key={agentkey}",
+    "ServerDensityKey": "{agentkey}",
 
 and put in your SD account name in there, and Server's Key.
 
