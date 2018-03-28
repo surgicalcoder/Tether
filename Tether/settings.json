@@ -1,6 +1,6 @@
 {
-    "ServerDensityUrl": "https://accountname.serverdensity.io",
-    "ServerDensityKey": "[Machine Key goes in here!]",
+    "ServerDensityUrl": "https://{account}.agent.serverdensity.io/intake/?agent_key={agentkey}",
+    "ServerDensityKey": "{agentkey}",
 
     "CheckInterval": 60,
     "ManifestCheckInterval": 300,
