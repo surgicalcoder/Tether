@@ -42,11 +42,11 @@ namespace Tether
 
                 if (assemblyVersion.ToString() == "0.0.0.0")
                 {
-                    _results.Add("agentVersion", "tether-x");
+                    _results.Add("agentVersion", "2.tether-x");
                 }
                 else
                 {
-                    _results.Add("agentVersion", "tether-" + Assembly.GetExecutingAssembly().GetName().Version);
+                    _results.Add("agentVersion", "2.tether-" + Assembly.GetExecutingAssembly().GetName().Version);
                 }
             }
             catch (Exception e)
