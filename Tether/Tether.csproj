@@ -1,18 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CF87A2F0-D28E-4572-A239-33FEBEA6EA18}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tether</RootNamespace>
-    <AssemblyName>Tether</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
+    <AssemblyTitle>Tether</AssemblyTitle>
+    <Company></Company>
+    <Product>Tether</Product>
+    <Description></Description>
+    <Copyright>Copyright ©  2015</Copyright>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -23,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,116 +31,50 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CF87A2F0-D28E-4572-A239-33FEBEA6EA18}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tether</RootNamespace>
+    <AssemblyName>Tether</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PostBuildEvent>if not exist "$(TargetDir)plugins" mkdir "$(TargetDir)plugins"
+
+REM copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if not exist "$(TargetDir)plugins" mkdir "$(TargetDir)plugins"
+
+REM copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Common.Logging, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.3.1.0\lib\net40\Common.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Common.Logging.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.Core.3.1.0\lib\net40\Common.Logging.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.1.2\lib\net40\NLog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Quartz, Version=2.3.2.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Quartz.2.3.2\lib\net40\Quartz.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SharpCompress, Version=0.11.3.0, Culture=neutral, PublicKeyToken=beaf6f427e128133, processorArchitecture=MSIL">
-      <HintPath>..\packages\sharpcompress.0.11.3\lib\net40\SharpCompress.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="TaskRemoting, Version=0.1.0.32935, Culture=neutral, PublicKeyToken=3778033b7ff7d17c, processorArchitecture=MSIL">
-      <HintPath>..\packages\TaskRemoting.0.1.1\lib\TaskRemoting.dll</HintPath>
-    </Reference>
-    <Reference Include="Topshelf, Version=3.2.150.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Topshelf.3.2.0\lib\net40-full\Topshelf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Topshelf.NLog, Version=3.2.150.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Topshelf.NLog.3.2.0\lib\net40-full\Topshelf.NLog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Topshelf.Quartz, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Topshelf.Quartz.0.4.0.1\lib\net40\Topshelf.Quartz.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Utilities.DataTypes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1a9f1ce8fe69b437, processorArchitecture=MSIL">
-      <HintPath>..\packages\CraigsUtilityLibrary-DataTypes.3.4.0199\lib\net40\Utilities.DataTypes.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Utilities.IO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=312f07f157e6ffd6, processorArchitecture=MSIL">
-      <HintPath>..\packages\CraigsUtilityLibrary-IO.3.4.0199\lib\net40\Utilities.IO.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Utilities.Reflection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=501e17eff79c154d, processorArchitecture=MSIL">
-      <HintPath>..\packages\CraigsUtilityLibrary-Reflection.3.4.0199\lib\net40\Utilities.Reflection.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <PackageReference Include="Common.Logging" Version="3.1.0" />
+    <PackageReference Include="Common.Logging.Core" Version="3.1.0" />
+    <PackageReference Include="CraigsUtilityLibrary-DataTypes" Version="3.4.0199" />
+    <PackageReference Include="CraigsUtilityLibrary-IO" Version="3.4.0199" />
+    <PackageReference Include="CraigsUtilityLibrary-Reflection" Version="3.4.0199" />
+    <PackageReference Include="Mono.Cecil" Version="0.9.6.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="7.0.1" />
+    <PackageReference Include="NLog" Version="4.1.2" />
+    <PackageReference Include="Quartz" Version="2.3.2" />
+    <PackageReference Include="sharpcompress" Version="0.11.3" />
+    <PackageReference Include="TaskRemoting" Version="0.1.1" />
+    <PackageReference Include="Topshelf" Version="3.2.0" />
+    <PackageReference Include="Topshelf.NLog" Version="3.2.0" />
+    <PackageReference Include="Topshelf.Quartz" Version="0.4.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Checks\IISCheck.cs" />
-    <Compile Include="Checks\IOCheck.cs" />
-    <Compile Include="MetricJsonConverter.cs" />
-    <Compile Include="Metrics\CPUUtilisationMetricProvider.cs" />
-    <Compile Include="Metrics\DiskUsageMetricProvider.cs" />
-    <Compile Include="Metrics\IOMetricProvider.cs" />
-    <Compile Include="Checks\PerformanceCounterBasedCheck.cs" />
-    <Compile Include="Checks\PerformanceCounterBasedProcessCheck.cs" />
-    <Compile Include="Checks\PhysicalMemoryCachedCheck.cs" />
-    <Compile Include="Checks\PhysicalMemoryFreeCheck.cs" />
-    <Compile Include="Checks\PhysicalMemoryUsedCheck.cs" />
-    <Compile Include="Checks\ProcessCheck.cs" />
-    <Compile Include="Checks\ProcessorCheck.cs" />
-    <Compile Include="Checks\SQLServerCheck.cs" />
-    <Compile Include="Checks\SwapMemoryFreeCheck.cs" />
-    <Compile Include="Checks\SwapMemoryUsedCheck.cs" />
-    <Compile Include="Checks\SystemStatsCheck.cs" />
-    <Compile Include="Config\Configuration.cs" />
-    <Compile Include="Config\ConfigurationSingleton.cs" />
-    <Compile Include="ICheck.cs" />
-    <Compile Include="InstanceProxy.cs" />
-    <Compile Include="ManifestRegularCheck.cs" />
-    <Compile Include="Metrics\NetworkTrafficMetricProvider.cs" />
-    <Compile Include="Metrics\TetherMetricProvider.cs" />
-    <Compile Include="PayloadPoster.cs" />
-    <Compile Include="Config\PluginManifest.cs" />
-    <Compile Include="Config\PluginManifestItem.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResenderJob.cs" />
-    <Compile Include="Service.cs" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -149,29 +82,15 @@
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="PluginManifest.json" />
     <Content Include="settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="PluginManifest.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tether.Plugins\Tether.Plugins.csproj">
-      <Project>{6ED87B4F-60D3-4AF7-9A25-EDE6E9066E3A}</Project>
-      <Name>Tether.Plugins</Name>
-    </ProjectReference>
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if not exist "$(TargetDir)plugins" mkdir "$(TargetDir)plugins"
-
-REM copy "$(SolutionDir)Tether.CoreSlices\bin\Debug\Tether.CoreSlices*.*" "$(TargetDir)plugins"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Tether.Plugins\Tether.Plugins.csproj" />
+  </ItemGroup>
 </Project>
