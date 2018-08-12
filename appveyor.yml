@@ -4,12 +4,11 @@ version: 2.0.{build}
 
 before_build:
   - nuget restore
-  - cmd: >-
-    $path = (Get-Item .\Tether\Tether.csproj).FullName
-    $csproj = [xml](Get-Content $path)
-    $csproj.Project.PropertyGroup.AssemblyVersion = $Env:APPVEYOR_BUILD_VERSION
-    $csproj.Project.PropertyGroup.FileVersion = $Env:APPVEYOR_BUILD_VERSION
-    $csproj.Save($path)
+  - $path = (Get-Item .\Tether\Tether.csproj).FullName
+  - $csproj = [xml](Get-Content $path)
+  - $csproj.Project.PropertyGroup.AssemblyVersion = $Env:APPVEYOR_BUILD_VERSION
+  - $csproj.Project.PropertyGroup.FileVersion = $Env:APPVEYOR_BUILD_VERSION
+  - $csproj.Save($path)
 
 skip_commits: 
   files:
