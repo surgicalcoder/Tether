@@ -19,7 +19,6 @@ namespace Tether
         public void Execute(IJobExecutionContext context)
         {
             var retransmitRootPath = Path.Combine(basePath, "_retransmit");
-           // var zeroPath = Path.Combine(retransmitRootPath, "0");
 
             if (!Directory.Exists(retransmitRootPath))
             {

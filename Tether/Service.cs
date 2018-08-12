@@ -247,8 +247,6 @@ namespace Tether
                 var filename = Path.GetFileNameWithoutExtension(jsonFiles.Name);
                 if (checkNames.Contains(filename))
                 {
-                    
-                    //instanceProxy.PluginSettings.Add(filename, value);
                     instanceProxy.AddSettings(filename, File.ReadAllText(jsonFiles.FullName));
                 }
             }
