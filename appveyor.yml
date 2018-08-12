@@ -7,7 +7,7 @@ before_build:
 
 assembly_info:
   patch: true
-  file: '**\AssemblyInfo.cs'
+  file: '**\*.csproj'
   assembly_version: '{version}'
   assembly_file_version: '{version}'
   assembly_informational_version: '{version}'
@@ -18,6 +18,6 @@ skip_commits:
   - '**/*.md'
 
 artifacts:
-  - path: Tether\bin\debug
+  - path: Tether\bin\debug\net472
     name: Build
     type: zip
