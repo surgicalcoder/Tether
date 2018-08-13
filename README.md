@@ -126,7 +126,7 @@ Configuration data files live in the `plugins` directory, and are named `(Full C
 * [2.0.x] A number of changes were introduced at one point through Version 2, without documentation:
   * Long running checks are now here - `ILongRunningMetricProvider` -  the plugin provides a duration for it's metrics to be cached. Note - this data does not persist between application runs, so if you stop Tether and restart it, the cache will be cleared. An example of this can be found in the [Windows Updates Plugin](https://github.com/surgicalcoder/Tether.Plugins/blob/master/Tether.WindowsUpdates/WindowsUpdateCheck.cs)
 
-  * A configuration option - `PluginMemoryLimit` (in bytes) - denotes how much memory the Plugins process can consume before being marked as plugins need to be reloaded - some custom plugins leak memory and resources, so this ensures that if the limit is reached, Plugins are restarted.
+  * A configuration option - `PluginMemoryLimit` (in bytes) - denotes how much memory the Plugins process can consume before being marked as plugins need to be reloaded - some custom plugins leak memory and resources, so this ensures that if the limit is reached, Plugins are restarted. Default value is 200mb.
 
 * [2.0.0] **BREAKING CHANGES!** Version 2 contains the following breaking changes:
     * Plugins are now loaded in their own AppDomain. This will allow future work to unload an AppDomain and reload plugins, to dynamically load new versions of plugins, without restarting the entire process. This will also allow for unloading/reloading AppDomains due to memory-leaky plugins.
